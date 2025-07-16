@@ -1,0 +1,3 @@
+FROM alpine:3.20
+ENV DB_PASSWORD=supersecreto
+CMD ["sh", "-c", "echo El password es: $DB_PASSWORD"]

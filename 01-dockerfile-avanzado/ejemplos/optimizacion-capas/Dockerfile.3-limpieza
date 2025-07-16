@@ -1,0 +1,10 @@
+FROM node:20
+
+COPY . .
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    npm install && \
+    npm run build && \
+    apt-get purge -y build-essential && \
+    rm -rf /var/lib/apt/lists/*
+CMD ["node", "app.js"]

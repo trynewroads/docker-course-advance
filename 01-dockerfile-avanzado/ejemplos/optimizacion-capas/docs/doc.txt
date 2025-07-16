@@ -1,0 +1,1 @@
+Esto es un archivo de documentación que debería ser ignorado por el .dockerignore.
