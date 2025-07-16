@@ -1,0 +1,11 @@
+# Dockerfile optimizado con multi-stage
+FROM node:20 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --production=false
+COPY . .
+
+FROM node:20-slim AS production
+WORKDIR /app
+COPY --from=build /app .
+CMD ["node", "app.js"]
