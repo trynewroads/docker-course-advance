@@ -1,9 +1,17 @@
-# Ejemplo de evolución en la gestión de secretos en Docker
+---
+marp: true
+---
+
+# Ejemplos de gestión de secretos en Docker
+
+---
 
 ## 1. Dockerfile con secreto en claro (mala práctica)
 
 - `Dockerfile.1-mala-practica`
 - El secreto queda guardado en la imagen y es visible para cualquiera.
+
+---
 
 ## 2. Variable de entorno solo en ejecución
 
@@ -13,6 +21,8 @@
   docker run -e DB_PASSWORD=supersecreto imagen-segura
   ```
 - El secreto no está en la imagen, solo se pasa al contenedor.
+
+---
 
 ## 3. Montar archivo externo
 
