@@ -114,6 +114,8 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
 - Nombra las etapas (`AS build`, `AS produccion`) para facilitar el copiado selectivo.
 - Usa imágenes base "slim" o "alpine" cuando sea posible.
 
+No es necesario construir todas las fases del Dockerfile. Usando la opción --target, puedes crear una imagen solo hasta una etapa concreta.
+
 ---
 
 ## Ejemplo: Multi-stage build
@@ -419,7 +421,3 @@ docker run -v $(pwd)/db_password.txt:/run/secreto.txt <imagen>
 ```
 
 **Ventaja:** El secreto está en un archivo externo, no en la imagen.
-
----
-
-Puedes ver estos ejemplos y probarlos en la carpeta [`ejemplos/secreto-evolucion`](../ejemplos/secreto-evolucion/README.md).

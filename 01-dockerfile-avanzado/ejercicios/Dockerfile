@@ -1,19 +1,24 @@
-# Dockerfile base para los ejercicios avanzados
-FROM node:20-alpine
+# Dockerfile muy mal optimizado y complejo
+FROM ubuntu:22.04
 
 WORKDIR /app
 
+# Instala Node.js y npm de forma manual
+RUN apt-get update
+RUN apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
 
-COPY package.json ./
-COPY app.js ./
+# Copia todo el contexto, incluyendo archivos innecesarios
+COPY . .
 
-# Variables de entorno por defecto (pueden ser sobreescritas en tiempo de ejecución)
-ENV PORT=3000 \
-    NODE_ENV=produccion \
-    DB_PASSWORD=pon-tu-secreto-aqui
+# Instala todas las dependencias
+RUN npm install
 
-RUN npm install --omit=dev
-
+# Variables de entorno por defecto
+ENV PORT=3000
+ENV NODE_ENV=produccion
+ENV DB_PASSWORD=pon-tu-secreto-aqui
 
 EXPOSE 3000
 

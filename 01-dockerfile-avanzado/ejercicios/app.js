@@ -5,7 +5,7 @@ const http = require('http');
 
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
-const DB_PASSWORD = process.env.DB_PASSWORD || 'no-definido';
+const DB_PASSWORD = process.env.DB_PASSWORD;
 
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });

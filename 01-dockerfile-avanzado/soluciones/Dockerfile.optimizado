@@ -1,0 +1,21 @@
+# Stage 1: Build (instala Node.js y dependencias)
+FROM debian:bookworm-slim AS build
+WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+COPY package.json ./
+RUN npm install --omit=dev
+COPY app.js ./
+
+# Stage 2: Producción (usa imagen oficial Node.js basada en Debian slim)
+FROM node:20-slim AS prod
+WORKDIR /app
+COPY --from=build /app/package.json ./
+COPY --from=build /app/app.js ./
+ENV PORT=3000 \
+    NODE_ENV=produccion \
+    DB_PASSWORD=pon-tu-secreto-aqui
+EXPOSE 3000
+CMD ["npm", "start"]

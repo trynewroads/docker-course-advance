@@ -1,0 +1,23 @@
+# Stage 1: Instalación manual de Node.js y build
+FROM ubuntu:22.04 AS build
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
+COPY . .
+RUN npm install
+
+# Stage 2: Producción (instala Node.js de nuevo y copia todo el contexto)
+FROM ubuntu:22.04 AS prod
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
+COPY --from=build /app /app
+ENV PORT=3000
+ENV NODE_ENV=produccion
+ENV DB_PASSWORD=pon-tu-secreto-aqui
+EXPOSE 3000
+CMD ["npm", "start"]
