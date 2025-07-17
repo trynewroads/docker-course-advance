@@ -1,10 +1,65 @@
 ---
 marp: true
 theme: default
-title: Dockerfile avanzado y optimización de imágenes
+title: Optimización de imágenes
+paginate: true
+footer: "Optimización de imágenes"
+header: |
+  <div class="image-wrapper">
+    <img src="../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  </div>
+
+style: |
+  section {
+    display:flex;
+  }
+
+  section > header {
+    width: 95%;
+  }
+
+
+
+  .front {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .image-wrapper{
+    text-align: end;
+    width: 100%;
+    
+  }
+  .logo{
+
+  }
+  .title{
+    font-size:2.5em;
+    margin-bottom: 0.2em;
+  }
+  .line{
+    width:100%;
+
+  }
+  .author{
+    font-size:1.3em;
+    margin-top: .5em;
+    margin-bottom: 0;
+  }
+  .company{
+    font-size:.9em;
+    margin-top: .1em;
+  }
 ---
 
-# Dockerfile avanzado y optimización de imágenes
+  <!-- _paginate: skip -->
+
+  <div class="front">
+    <h1 class="title"> Optimización de imágenes </h1>
+    <hr class="line"/>
+    <p class="author">Arturo Silvelo</p>
+    <p class="company">Try New Roads</p>
+  </div>
 
 ---
 

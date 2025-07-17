@@ -1,19 +1,65 @@
 ---
 marp: true
 theme: default
-title: Optimización de imágenes
+title: Optimización de Imágenes
 paginate: true
-footer: "Optimización de imágenes"
+footer: "Optimización de Imágenes"
+header: |
+  <div class="image-wrapper">
+    <img src="../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  </div>
+
+style: |
+  section {
+    display:flex;
+  }
+
+  section > header {
+    width: 95%;
+  }
+
+
+
+  .front {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .image-wrapper{
+    text-align: end;
+    width: 100%;
+    
+  }
+  .logo{
+
+  }
+  .title{
+    font-size:2.5em;
+    margin-bottom: 0.2em;
+  }
+  .line{
+    width:100%;
+
+  }
+  .author{
+    font-size:1.3em;
+    margin-top: .5em;
+    margin-bottom: 0;
+  }
+  .company{
+    font-size:.9em;
+    margin-top: .1em;
+  }
 ---
 
-<!-- _paginate: skip -->
+  <!-- _paginate: skip -->
 
-<div style="text-align:center;">
-  <img src="../img/TNR_01.png" alt="Logo Empresa" width="180" style="margin-bottom: 30px;" />
-  <h1 style="font-size:2.5em; margin-bottom: 0.2em;"> Optimización de imágenes</h1>
-  <hr style="width:60%; margin: 1em auto; border:1px solid #ccc;" />
-  <p style="font-size:1.3em; margin-top: 1.5em;">Arturo Silvelo</p>
-</div>
+  <div class="front">
+    <h1 class="title"> Optimización de Imágenes </h1>
+    <hr class="line"/>
+    <p class="author">Arturo Silvelo</p>
+    <p class="company">Try New Roads</p>
+  </div>
 
 ---
 
