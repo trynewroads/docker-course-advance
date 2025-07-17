@@ -1,8 +1,21 @@
 ---
 marp: true
+theme: default
+title: Ejemplos - Optimización de capas
+paginate: true
+footer: "Ejemplos - Optimización de capas "
 ---
 
-# Ejemplos de optimización de capas en Docker
+<!-- _paginate: skip -->
+
+<div style="text-align:center;">
+  <img src="../../../img/TNR_01.png" alt="Logo Empresa" width="180" style="margin-bottom: 30px;" />
+  <h1 style="font-size:2.5em; margin-bottom: 0.2em;"> Ejemplos -  Optimización de capas </h1>
+  <hr style="width:60%; margin: 1em auto; border:1px solid #ccc;" />
+  <p style="font-size:1.3em; margin-top: 1.5em;">Arturo Silvelo</p>
+</div>
+
+---
 
 Este ejemplo muestra cómo optimizar el uso de capas en un Dockerfile para aprovechar la cache y reducir el tiempo de construcción.
 
