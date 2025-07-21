@@ -6,7 +6,7 @@ paginate: true
 footer: "Ejemplos - Secretos"
 header: |
   <div class="image-wrapper">
-    <img src="../../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+    <img src="img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
   </div>
 
 style: |
