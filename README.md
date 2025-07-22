@@ -74,7 +74,7 @@ style: |
 
 ## 2. Docker Compose avanzado
 
-- **Anchors y extends**: Reutilizar configuraciones YAML comunes.
+- **Anchors**: Reutilizar configuraciones YAML comunes.
 - **Healthcheck**: Comprobación y dependencias de servicios.
 - **Entornos**: Gestión de variables de entorno y configuraciones para múltiples entornos.
 
