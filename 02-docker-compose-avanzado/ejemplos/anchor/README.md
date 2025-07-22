@@ -67,7 +67,7 @@ Este ejemplo muestra cómo reutilizar variables de entorno en Docker Compose usa
 
 ## Contenido
 
-- `anchors.yml`: archivo de ejemplo con cuatro servicios que demuestran el uso de anchors en YAML y el orden de ejecución con `depends_on`.
+- `Dockerfile.yml`: archivo de ejemplo con cuatro servicios que demuestran el uso de anchors en YAML y el orden de ejecución con `depends_on`.
 
 ---
 

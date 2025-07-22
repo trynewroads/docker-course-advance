@@ -189,23 +189,118 @@ Esto asegura que `app` solo se inicie cuando la base de datos esté lista y salu
 
 ## Entornos y variables
 
-- Gestión de variables de entorno.
-- Configuración para múltiples entornos (desarrollo, producción, etc.).
+Docker Compose permite gestionar variables de entorno de forma flexible, facilitando la configuración para distintos entornos (desarrollo, producción, testing, etc.).
 
 ---
 
-## Ejemplo completo
+### Formas de definir variables de entorno
 
-- Ejemplo de un docker-compose.yml avanzado que combine los conceptos anteriores.
+- **Directamente en el servicio:**
+  ```yaml
+  services:
+    app:
+      environment:
+        - DEBUG=true
+        - API_URL=https://api.example.com
+  ```
 
 ---
 
-## Buenas prácticas
+- **Variables globales (nivel superior):**
 
-- Consejos para mantener archivos docker-compose limpios y escalables.
+  ```yaml
+  environment:
+    GLOBAL_VAR: valor
+  services:
+    app:
+      image: alpine:3.20
+      environment:
+        - APP_VAR=valor2
+  ```
+
+  Todas las variables definidas en el bloque global `environment` estarán disponibles en todos los servicios. Si una variable se repite en el bloque del servicio, este valor sobrescribe el global.
 
 ---
 
-## Preguntas y ejercicios
+- **Usando archivos `.env` (uno o varios):**
+  Puedes crear uno o varios archivos `.env` y referenciarlos con `env_file`:
+  ```yaml
+  services:
+    app:
+      env_file:
+        - ./app.env
+        - ./common.env
+  ```
+  Ejemplo de archivo `app.env`:
+  ```env
+  DEBUG=true
+  API_URL=https://api.example.com
+  ```
 
-- Espacio para preguntas y ejercicios prácticos sobre Docker Compose avanzado.
+---
+
+- **Referenciando variables del sistema:**
+  ```yaml
+  services:
+    app:
+      environment:
+        - USER=${USER}
+        - HOME=${HOME}
+  ```
+
+---
+
+- **Combinando env_file y environment:**
+  ```yaml
+  services:
+    app:
+      env_file:
+        - ./app.env
+      environment:
+        DEBUG: "false" # Sobrescribe el valor de DEBUG si está en app.env
+        EXTRA: "valor"
+  ```
+  Las variables definidas en `environment` sobrescriben las que vienen de `env_file` si tienen el mismo nombre.
+
+---
+
+## Configuración para múltiples entornos
+
+Docker Compose permite adaptar la configuración según el entorno (desarrollo, producción, testing) usando archivos y variables específicas.
+
+---
+
+- **Ejemplo de archivo base (`docker-compose.yml`):**
+
+  ```yaml
+  services:
+    app:
+      image: my-app:latest
+      env_file:
+        - .env
+  ```
+
+- **Ejemplo de archivo extendido (`docker-compose.dev.yml`):**
+
+  ```yaml
+  services:
+    app:
+      environment:
+        DEBUG: "true"
+      volumes:
+        - ./src:/app/src
+  ```
+
+---
+
+- **Lanzar el entorno deseado:**
+
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up
+  ```
+
+- **Diferencias típicas entre entornos:**
+  - Variables de entorno (DEBUG, API_URL, credenciales)
+  - Montaje de volúmenes (hot reload en dev)
+  - Puertos expuestos
+  - Servicios adicionales (mock, test, monitoring)
