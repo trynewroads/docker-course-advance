@@ -5,15 +5,12 @@ on:
     paths:
       - "**/slides/*.md"
       - ".github/workflows/marp-pdf.yml"
-  pull_request:
-    paths:
-      - "**/slides/*.md"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Instalar Node y Marp CLI
         run: |
           npm install -g @marp-team/marp-cli
