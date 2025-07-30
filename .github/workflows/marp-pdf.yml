@@ -22,22 +22,20 @@ jobs:
       - name: Exportar slides Marp a PDF
         run: |
           for file in $(find . -type f -name '*.md'); do
-          if grep -q '^[[:space:]]*marp:[[:space:]]*true' "$file"; then
+            if grep -q '^[[:space:]]*marp:[[:space:]]*true' "$file"; then
               pdf_file="${file%.md}.pdf"
               echo "Converting $file to $pdf_file"
               marp --pdf --allow-local-files -o "$pdf_file" "$file"
-          fi
+            fi
           done
-      - name: Detectar nombre de la rama
-        id: vars
-        run: echo "branch=$(echo $GITHUB_REF | sed 's|refs/heads/||')" >> $GITHUB_OUTPUT
-      - name: Copiar PDFs a carpeta temporal para publicar
+      - name: Commit y push de los PDFs generados
         run: |
-          mkdir -p public/${{ steps.vars.outputs.branch }}
-          find . -type f -name '*.pdf' -exec cp {} public/${{ steps.vars.outputs.branch }}/ \;
-      - name: Publicar en GitHub Pages (rama gh-pages)
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-          keep_files: true
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add '*.pdf'
+          if git diff --cached --quiet; then
+            echo "No hay cambios en los PDFs."
+          else
+            git commit -m "chore: generar PDFs Marp automáticamente [skip ci]"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          fi
