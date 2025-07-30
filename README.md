@@ -1,4 +1,4 @@
-![banner](img/banner.png)
+![banner](./img/banner.png)
 
 # Curso Avanzado Docker
 

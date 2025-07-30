@@ -3,11 +3,11 @@ name: Exportar slides Marp a PDF
 on:
   push:
     paths:
-      - '**/slides/*.md'
-      - '.github/workflows/marp-pdf.yml'
+      - "**/slides/*.md"
+      - ".github/workflows/marp-pdf.yml"
   pull_request:
     paths:
-      - '**/slides/*.md'
+      - "**/slides/*.md"
 
 jobs:
   build:
@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: slides-pdf
-          path: '**/slides/*.pdf'
+          path: "**/slides/*.pdf"
