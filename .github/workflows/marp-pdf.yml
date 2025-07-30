@@ -1,4 +1,4 @@
-name: Exportar slides Marp a PDF
+name: Publicar PDF de slides en GitHub Pages
 
 on:
   push:
@@ -7,21 +7,37 @@ on:
       - ".github/workflows/marp-pdf.yml"
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Instalar Node y Marp CLI
-        run: |
-          npm install -g @marp-team/marp-cli
-      - name: Exportar todos los slides a PDF
-        run: |
-          find . -type f -path '*/slides/*.md' | while read -r file; do
-            pdf_file="${file%.md}.pdf"
-            marp "$file" --pdf -o "$pdf_file"
-          done
-      - name: Subir PDFs como artefacto
-        uses: actions/upload-artifact@v4
         with:
-          name: slides-pdf
-          path: "**/slides/*.pdf"
+          fetch-depth: 0
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar Marp CLI
+        run: npm install -g @marp-team/marp-cli
+      - name: Exportar slides Marp a PDF
+        run: |
+          for file in $(find . -type f -name '*.md'); do
+          if grep -q '^[[:space:]]*marp:[[:space:]]*true' "$file"; then
+              pdf_file="${file%.md}.pdf"
+              echo "Converting $file to $pdf_file"
+              marp --pdf --allow-local-files -o "$pdf_file" "$file"
+          fi
+          done
+      - name: Detectar nombre de la rama
+        id: vars
+        run: echo "branch=$(echo $GITHUB_REF | sed 's|refs/heads/||')" >> $GITHUB_OUTPUT
+      - name: Copiar PDFs a carpeta temporal para publicar
+        run: |
+          mkdir -p public/${{ steps.vars.outputs.branch }}
+          find . -type f -name '*.pdf' -exec cp --parents {} public/${{ steps.vars.outputs.branch }}/ \;
+      - name: Publicar en GitHub Pages (rama gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true
