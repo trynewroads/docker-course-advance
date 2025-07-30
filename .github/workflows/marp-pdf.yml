@@ -34,7 +34,7 @@ jobs:
       - name: Copiar PDFs a carpeta temporal para publicar
         run: |
           mkdir -p public/${{ steps.vars.outputs.branch }}
-          find . -type f -name '*.pdf' -exec cp --parents {} public/${{ steps.vars.outputs.branch }}/ \;
+          find . -type f -name '*.pdf' -exec cp {} public/${{ steps.vars.outputs.branch }}/ \;
       - name: Publicar en GitHub Pages (rama gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
