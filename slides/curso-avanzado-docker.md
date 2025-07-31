@@ -18,7 +18,6 @@ header: |
 style: |
   section {
     display:flex;
-    font-family: Inter;
   }
 
   section::after, header, footer {
