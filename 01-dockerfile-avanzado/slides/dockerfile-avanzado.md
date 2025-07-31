@@ -1,12 +1,12 @@
 ---
 marp: true
 theme: default
-title: Curso Avanzado Docker
+title: Dockerfile Avanzado
 paginate: true
 size: 16:9
 backgroundColor: #2E2052;
 color: #ffffff;
-footer: Curso Avanzado Docker
+footer: Dockerfile Avanzado
 header: |
   <div class="logo-start">
     <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
@@ -18,6 +18,11 @@ header: |
 style: |
   section {
     display:flex;
+  }
+
+  section > h2, h3, h4, h5{
+    border-bottom: 2px solid #2D6BFA;
+    padding-bottom: .3rem;
   }
 
   section::after, header, footer {
@@ -62,6 +67,7 @@ style: |
 
   .line{
     width:100%;
+    background-color: #2D6BFA
   }
 
   .author{
@@ -104,7 +110,7 @@ style: |
   <!-- _paginate: skip -->
 
   <div class="front">
-    <h1 class="title"> Optimización de imágenes </h1>
+    <h1 class="title"> Dockerfile Avanzado </h1>
     <hr class="line"/>
     <p class="author">Arturo Silvelo</p>
     <p class="company">Try New Roads</p>
@@ -169,7 +175,7 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
 
 ---
 
-## Ejemplo: Multi-stage build
+## Ejemplo 2: Multi-stage build
 
 ```dockerfile
 FROM node:20 AS build
@@ -187,31 +193,6 @@ En este ejemplo:
 
 - La etapa `build` instala dependencias y compila la app.
 - La etapa `production` solo copia lo necesario para ejecutar.
-
----
-
-## ¿Cómo probar y comparar?
-
-Puedes comparar el tamaño de las imágenes construyendo ambos Dockerfiles en la carpeta [`ejemplos/multi-stage`](../ejemplos/multi-stage):
-
-```sh
-# Construir imagen tradicional
-# Construir imagen multi-stage
-# Ver tamaños
-docker images | findstr app-
-```
-
----
-
-Luego puedes ejecutar ambas imágenes:
-
-```sh
-docker run --rm -p 3000:3000 app-tradicional
-# o
-docker run --rm -p 3000:3000 app-multistage
-```
-
-Abre http://localhost:3000 para comprobar que ambas funcionan igual, pero la imagen multi-stage será más ligera.
 
 ---
 
@@ -243,19 +224,18 @@ Algunas estrategias recomendadas son:
   Así reduces el número de capas y aprovechas mejor la cache de Docker.
 - **Elimina archivos temporales y de build en la misma RUN:**  
   Si los borras en la misma instrucción donde se crean, no quedan guardados en ninguna capa.
-- **Incluye un archivo `.dockerignore`:**  
-  Excluye archivos y carpetas que no necesitas en la imagen (tests, docs, node_modules, etc.), evitando que se copien y generen capas innecesarias.
 
 ---
 
-### El orden de las capas y la cache
+- **Incluye un archivo `.dockerignore`:**  
+  Excluye archivos y carpetas que no necesitas en la imagen (tests, docs, node_modules, etc.), evitando que se copien y generen capas innecesarias.
 
 - **El orden de las capas influye en el tiempo de build:**
   Si modificas una instrucción, todas las capas posteriores se reconstruyen. Coloca primero las instrucciones que cambian menos (por ejemplo, dependencias) y después las que cambian más (código fuente).
 
 ---
 
-## Ejemplo 1: Dockerfile mal optimizado
+### Ejemplo 1: Dockerfile mal optimizado
 
 ```dockerfile
 FROM node:20
@@ -270,7 +250,7 @@ CMD ["node", "app.js"]
 
 ---
 
-## Ejemplo 2: Agrupar RUN en una sola instrucción
+### Ejemplo 2: Agrupar RUN en una sola instrucción
 
 ```dockerfile
 FROM node:20
@@ -289,7 +269,7 @@ Mejora:
 
 ---
 
-## Ejemplo 3: Eliminar archivos temporales y dependencias de build
+### Ejemplo 3: Eliminar archivos temporales y dependencias de build
 
 ```dockerfile
 FROM node:20
@@ -310,7 +290,7 @@ Mejora:
 
 ---
 
-## Ejemplo 4: Reordenar capas para aprovechar la cache
+### Ejemplo 4: Reordenar capas para aprovechar la cache
 
 ```dockerfile
 FROM node:20
@@ -326,9 +306,7 @@ RUN npm run build
 CMD ["node", "app.js"]
 ```
 
-Mejora:
-
-- Si solo cambias el código fuente, la instalación de dependencias se mantiene en cache y el build es mucho más rápido.
+> Si solo cambias el código fuente, la instalación de dependencias se mantiene en cache y el build es mucho más rápido.
 
 ---
 
@@ -343,9 +321,7 @@ docs
 *.log
 ```
 
-Impacto:
-
-- No se copian archivos innecesarios al contexto de build, la imagen es más pequeña y el build más eficiente.
+> No se copian archivos innecesarios al contexto de build, la imagen es más pequeña y el build más eficiente.
 
 ---
 
@@ -360,7 +336,7 @@ Estas variables ayudan a crear imágenes más flexibles, reutilizables y adaptab
 
 ---
 
-## Buenas prácticas y advertencias
+## Buenas prácticas
 
 - Usa `ARG` para valores temporales o que no deban quedar en la imagen.
 - Usa `ENV` para configuración que necesita el contenedor en ejecución.
@@ -393,13 +369,17 @@ CMD ["node", "app.js"]
 ### ¿Cómo probarlo?
 
 1. Construye la imagen con un valor personalizado:
+
    ```sh
    docker build -t arg-env-demo --build-arg MENSAJE="¡Mensaje personalizado!" .
    ```
+
 2. Ejecuta el contenedor:
+
    ```sh
    docker run --rm arg-env-demo
    ```
+
    Verás en la salida el valor que pasaste por ARG.
 
 ---
@@ -412,13 +392,15 @@ En Docker, los secretos no deben almacenarse en la imagen. Deben gestionarse de 
 
 ---
 
-**Riesgos de una mala gestión:**
+##### Riesgos de una mala gestión
 
 - Los secretos quedan guardados en la imagen y pueden ser leídos por cualquiera con acceso.
 - Si subes la imagen a un registro público, los secretos quedan expuestos.
 - Los secretos pueden filtrarse en logs, capas intermedias o sistemas de CI/CD.
 
-**Buenas prácticas:**
+---
+
+##### Buenas prácticas
 
 - Nunca incluyas secretos en el Dockerfile ni en la imagen.
 - Usa mecanismos externos: Docker secrets (Swarm), variables de entorno solo en ejecución, archivos montados como volúmenes.
@@ -427,9 +409,9 @@ En Docker, los secretos no deben almacenarse en la imagen. Deben gestionarse de 
 
 ---
 
-## Ejemplo: evolución en la gestión de secretos
+# Ejemplos: Gestión de secretos
 
-Veamos tres formas de gestionar un secreto (por ejemplo, una contraseña de base de datos):
+---
 
 ### 1. Dockerfile con secreto en claro (mala práctica)
 
@@ -439,7 +421,7 @@ ENV DB_PASSWORD=supersecreto
 CMD ["sh", "-c", "echo El password es: $DB_PASSWORD"]
 ```
 
-**Problema:** El secreto queda guardado en la imagen y es visible para cualquiera.
+> El secreto queda guardado en la imagen y es visible para cualquiera.
 
 ---
 
@@ -456,7 +438,7 @@ Se ejecuta así:
 docker run -e DB_PASSWORD=supersecreto <imagen>
 ```
 
-**Ventaja:** El secreto no está en la imagen, solo se pasa al contenedor.
+> El secreto no está en la imagen, solo se pasa al contenedor.
 
 ---
 
@@ -467,10 +449,8 @@ FROM alpine:3.20
 CMD ["sh", "-c", "echo El password es: $(cat /run/secreto.txt)"]
 ```
 
-Se ejecuta así:
-
 ```sh
 docker run -v $(pwd)/db_password.txt:/run/secreto.txt <imagen>
 ```
 
-**Ventaja:** El secreto está en un archivo externo, no en la imagen.
+> El secreto está en un archivo externo, no en la imagen.
