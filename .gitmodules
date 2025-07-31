@@ -3,4 +3,4 @@
 	url = git@github.com:trynewroads/course-backend.git
 [submodule "course-frontend"]
 	path = frontend
-	url = https://github.com/trynewroads/course-frontend
+	url = git@github.com:trynewroads/course-frontend.git
