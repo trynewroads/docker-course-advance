@@ -1,12 +1,18 @@
 ---
 marp: true
 theme: default
-title: Optimización de Imágenes
+title: Curso Avanzado Docker
 paginate: true
-footer: "Optimización de Imágenes"
+size: 16:9
+backgroundColor: #2E2052;
+color: #ffffff;
+footer: Curso Avanzado Docker
 header: |
-  <div class="image-wrapper">
-    <img src="../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  <div class="logo-start">
+    <img src="../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
+  </div>
+  <div class="logo-end">
+    <img src="../img/logo_white.png" alt="Logo Docker" class="logo" />
   </div>
 
 style: |
@@ -14,38 +20,56 @@ style: |
     display:flex;
   }
 
-  section > header {
-    width: 95%;
+  section::after, header, footer {
+    font-weight: 700;
+    color: white;
   }
 
+  section > header {
+    display: flex;
+    top: 0;
+    width: calc(100% - 60px);
+    background: radial-gradient(30% 100% at 50% 0%, #2D6BFA 0%, rgba(46, 32, 82, 0.00) 100%);
+  }
 
+  .logo-start{
+    flex:1;
+  }
+
+  .logo-end{
+    flex:1;
+    text-align:end;
+    width: auto;
+    height: 30px;
+  }
+
+  .logo {
+    width: auto;
+    height: 30px;
+  }
 
   .front {
     display: flex;
     flex-direction: column;
   }
 
-  .image-wrapper{
-    text-align: end;
-    width: 100%;
-    
-  }
-  .logo{
-
-  }
   .title{
     font-size:2.5em;
-    margin-bottom: 0.2em;
+    margin-bottom:0;
+    padding-bottom:0;
+    
   }
+
   .line{
     width:100%;
-
   }
+
   .author{
     font-size:1.3em;
-    margin-top: .5em;
+    font-weight: 700;
     margin-bottom: 0;
   }
+
   .company{
     font-size:.9em;
     margin-top: .1em;
