@@ -65,3 +65,21 @@ Por ejemplo:
 - ...
 
 El archivo `README.md` contiene el índice general del curso. Las slides completas están en la carpeta `/slides/` de cada módulo y en `slides/curso-avanzado-docker.md` para la visión global.
+
+## Clonado del repositorio con submódulos
+
+Este repositorio contiene submódulos (otros repositorios incluidos dentro de carpetas). Para clonar correctamente y tener todo el contenido, sigue una de estas opciones:
+
+**Opción 1: Clonar desde cero (recomendado)**
+
+```bash
+git clone --recurse-submodules git@github.com:trynewroads/docker-course-advance.git
+```
+
+**Opción 2: Si ya has clonado el repositorio sin submódulos**
+
+```bash
+git submodule update --init --recursive
+```
+
+Esto descargará los submódulos en las rutas y versiones correctas.
