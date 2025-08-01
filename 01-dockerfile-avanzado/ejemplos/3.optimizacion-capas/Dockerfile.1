@@ -1,8 +1,9 @@
+# Dockerfile Fase 1: Agrupando comandos RUN
 FROM node:20
-
+WORKDIR /app
 COPY . .
 RUN apt-get update && \
     apt-get install -y build-essential && \
-    npm install && \
-    npm run build
+    npm install
+RUN npm test
 CMD ["node", "app.js"]
