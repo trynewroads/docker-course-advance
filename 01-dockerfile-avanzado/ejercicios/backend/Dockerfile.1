@@ -1,0 +1,71 @@
+# Etapa de build
+FROM node:20 as build
+
+WORKDIR /app
+
+# Variables de entorno para build
+ENV NODE_ENV=development
+
+# Copiar todo el proyecto
+COPY . .
+
+# Instalar dependencias
+RUN npm install
+
+# Compilar TypeScript genera carpeta dist
+RUN npm run build
+
+# Etapa de test
+FROM node:20 as test
+WORKDIR /app
+
+# Variables de entorno para tests
+ENV NODE_ENV=test
+ENV PORT=3000
+ENV DEBUG_REQUEST=false
+ENV DEFAULT_USER=admin
+ENV DEFAULT_PASS=12345678
+ENV JWT_SECRET=secretKey
+ENV ENABLE_AUTH=true
+ENV USE_DB=false
+ENV DB_HOST=localhost
+ENV DB_PORT=5432
+ENV DB_USER=todo_user
+ENV DB_PASS=todo_pass
+ENV DB_NAME=todo_db
+
+COPY --from=build /app /app
+# Ejecutar tests
+RUN npm run test
+
+FROM node:20 AS production
+WORKDIR /app
+
+# Variables de entorno para producción
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV DEBUG_REQUEST=false
+ENV DEFAULT_USER=admin
+ENV DEFAULT_PASS=12345678
+ENV JWT_SECRET=secretKey
+ENV ENABLE_AUTH=true
+ENV USE_DB=false
+ENV DB_HOST=localhost
+ENV DB_PORT=5432
+ENV DB_USER=todo_user
+ENV DB_PASS=todo_pass
+ENV DB_NAME=todo_db
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json .
+
+RUN npm install --production
+
+# Exponer puerto
+EXPOSE $PORT
+
+# Comando para ejecutar en producción
+CMD ["node", "dist/main.js"]
+
+
+#docker build --target production -f backend/Dockerfile.1 -t backend-optimized ../../backend/
