@@ -17,11 +17,13 @@ COPY . .
 # Compilar aplicación Angular
 RUN npm run build && npm cache clean --force
 
-
 FROM nginx:1.29 AS production
 
-ENV BACKEND_HOST=backend
-ENV BACKEND_PORT=3000
+ARG BACKEND_HOST=localhost
+ARG BACKEND_PORT=3000
+
+ENV BACKEND_HOST=${BACKEND_HOST}
+ENV BACKEND_PORT=${BACKEND_PORT}
 
 # Copiar archivos compilados a nginx
 COPY --from=build /app/dist/course-frontend/browser /usr/share/nginx/html
