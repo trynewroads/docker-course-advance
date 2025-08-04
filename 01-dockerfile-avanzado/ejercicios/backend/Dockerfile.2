@@ -6,14 +6,15 @@ WORKDIR /app
 # Variables de entorno para build
 ENV NODE_ENV=development
 
-# Copiar todo el proyecto
-COPY . .
-
-# Instalar dependencias
+# Copia primero solo package.json y package-lock.json para aprovechar cache de dependencias
+COPY package*.json ./
 RUN npm install
 
-# Compilar TypeScript genera carpeta dist
-RUN npm run build
+# Ahora sí, copia el resto del código fuente
+COPY . .
+
+# Compila y limpia en una sola capa para reducir capas intermedias
+RUN npm run build && npm cache clean --force
 
 # Etapa de test
 FROM node:20 as test
@@ -35,10 +36,10 @@ ENV DB_PASS=todo_pass
 ENV DB_NAME=todo_db
 
 COPY --from=build /app /app
-# Ejecutar tests
 RUN npm run test
 
-FROM node:20 AS production
+# Etapa de producción
+FROM node:20 as production
 WORKDIR /app
 
 # Variables de entorno para producción
@@ -59,13 +60,9 @@ ENV DB_NAME=todo_db
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json .
 
-RUN npm install --omit=dev
+# Instala solo dependencias de producción y limpia cache en la misma capa
+RUN npm install --omit=dev && npm cache clean --force
 
-# Exponer puerto
 EXPOSE $PORT
 
-# Comando para ejecutar en producción
 CMD ["node", "dist/main.js"]
-
-
-#docker build --target production -f backend/Dockerfile.1 -t backend-optimized ../../backend/
