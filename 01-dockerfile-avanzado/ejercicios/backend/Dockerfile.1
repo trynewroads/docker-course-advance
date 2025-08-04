@@ -1,5 +1,5 @@
 # Etapa de build
-FROM node:20 as build
+FROM node:20 AS build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN npm install
 RUN npm run build
 
 # Etapa de test
-FROM node:20 as test
+FROM node:20 AS test
 WORKDIR /app
 
 # Variables de entorno para tests

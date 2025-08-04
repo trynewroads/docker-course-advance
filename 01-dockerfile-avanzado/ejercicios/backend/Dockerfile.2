@@ -1,5 +1,5 @@
 # Etapa de build
-FROM node:20 as build
+FROM node:20 AS build
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build && npm cache clean --force
 
 # Etapa de test
-FROM node:20 as test
+FROM node:20 AS test
 WORKDIR /app
 
 # Variables de entorno para tests
@@ -39,7 +39,7 @@ COPY --from=build /app /app
 RUN npm run test
 
 # Etapa de producción
-FROM node:20 as production
+FROM node:20 AS production
 WORKDIR /app
 
 # Variables de entorno para producción
