@@ -119,81 +119,120 @@ style: |
 
 ---
 
-## Ejercicios
-
-Estos ejercicios prácticos te permitirán aplicar las técnicas avanzadas de Dockerfile aprendidas en los ejemplos. Trabajarás con aplicaciones reales:
-
-- **Backend**: API REST desarrollada con **NestJS** (TypeScript)
-- **Frontend**: Aplicación web desarrollada con **Angular** (TypeScript)
-
-Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar aplicando las técnicas aprendidas.
-
-> **Nota:** Para ejecutar los ejercicios, asegúrate de estar en el directorio `ejercicios/` y seguir las instrucciones de cada sección.
+# Soluciones: Ejercicios Dockerfile Avanzado
 
 ---
 
-# Ejercicio 1: Backend NestJS
+## 0. Base
 
----
-
-## Objetivo
-
-Optimizar progresivamente el Dockerfile del backend NestJS aplicando cada una de las técnicas vistas en el temario.
-
-## Aplicación
-
-La aplicación backend está ubicada en `../../backend/` y contiene:
-
-- API REST con NestJS
-- Base de datos con TypeORM
-- Autenticación JWT
-- Documentación Swagger
-
----
-
-### 1.1 Dockerfile Base
-
-Analiza el `Dockerfile` sin optimizar ubicado en `backend/Dockerfile`.
-
-**Comando para construir:**
+**Construcción:**
 
 ```bash
-docker build -f backend/Dockerfile -t backend-sin-optimizar ../../backend
+docker build -f ../ejercicios/backend/Dockerfile -t backend-base ../../backend/
+```
+
+**Ejecución:**
+
+```bash
+docker run --rm --init -p3000:3000 backend-base
+```
+
+**Comprobación:**
+
+```
+curl localhost:3000/api/healthcheck
+# Respuesta
+{"status":"ok"}
 ```
 
 ---
 
-### 1.2 Multi-stage Build
+## 1. Multi-stage (multi-stage)
 
-Crea `Dockerfile.multistage` que implemente multi-stage builds:
+**Construcción:**
 
-- **Etapa 1 (build)**: Compila la aplicación TypeScript
-- **Etapa 2 (test)**: Ejecuta los tests sobre el código compilado
-- **Etapa 3 (production)**: Solo archivos necesarios para ejecutar
+```bash
+docker build -f Dockerfile.multistage -t backend-multistage ../../backend/
+```
+
+**Ejecución:**
+
+```bash
+docker run -p 3000:3000 backend-multistage
+```
+
+## 2. Optimización de capas (optimizacion-capas)
+
+**Construcción:**
+
+```bash
+docker build -f Dockerfile.optimizado -t backend-optimizado ../../backend/
+```
+
+**Ejecución:**
+
+```bash
+docker run -p 3000:3000 backend-optimizado
+```
 
 ---
 
-### 1.3 Optimización de Capas
+## 3. ARGS y ENV
 
-Crea `Dockerfile.optimizado` mejorando el anterior:
+**Construcción:**
 
-- Agrupa comandos RUN relacionados
-- Limpia archivos temporales en la misma capa
-- Reordena instrucciones para mejor cache
-
----
-
-### 1.4 Variables ARG y ENV
-
-Crea `Dockerfile.variables` que gestione correctamente las variables:
-
-- Usa **ARG** para las variables de entorno.
+```bash
+docker build -f Dockerfile.variables -t backend-variables ../../backend/
+```
 
 ---
 
-### 1.5 Gestión Segura de Secretos
+## 4. Secretos
 
-Crea `Dockerfile.seguro` que elimine todos los secretos hardcodeados:
+**Construcción:**
 
-- Variables sensibles se pasan solo en runtime (`-e`)
-- Opción para leer secretos desde archivos montados
+```bash
+docker build -f Dockerfile.seguro -t backend-seguro ../../backend/
+```
+
+---
+
+## 5. Bonus
+
+**Construcción:**
+
+```bash
+docker build -f Dockerfile.bonus -t backend-bonus ../../backend/
+```
+
+---
+
+## Comprobaciones
+
+**Servidor:**
+
+```
+curl localhost:3000/api/healthcheck
+# Respuesta
+{"status":"ok"}
+```
+
+**Imágenes:**
+
+```
+docker image ls | grep backend
+```
+
+---
+
+**Historial:**
+
+```
+docker history <id>
+```
+
+**Variables:**
+
+```
+docker exec -it <id> env
+```

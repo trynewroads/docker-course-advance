@@ -68,4 +68,3 @@ EXPOSE $PORT
 CMD ["node", "dist/main.js"]
 
 
-#docker build --target production -f backend/Dockerfile.1 -t backend-optimized ../../backend/
