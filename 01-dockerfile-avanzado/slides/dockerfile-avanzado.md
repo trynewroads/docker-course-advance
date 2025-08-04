@@ -1,12 +1,18 @@
 ---
 marp: true
 theme: default
-title: Optimización de imágenes
+title: Dockerfile Avanzado
 paginate: true
-footer: "Optimización de imágenes"
+size: 16:9
+backgroundColor: #2E2052;
+color: #ffffff;
+footer: Dockerfile Avanzado
 header: |
-  <div class="image-wrapper">
-    <img src="../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  <div class="logo-start">
+    <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
+  </div>
+  <div class="logo-end">
+    <img src="../../img/logo_white.png" alt="Logo Docker" class="logo" />
   </div>
 
 style: |
@@ -14,48 +20,97 @@ style: |
     display:flex;
   }
 
-  section > header {
-    width: 95%;
+  section > h2, h3, h4, h5{
+    border-bottom: 2px solid #2D6BFA;
+    padding-bottom: .3rem;
   }
 
+  section::after, header, footer {
+    font-weight: 700;
+    color: white;
+  }
 
+  section > header {
+    display: flex;
+    top: 0;
+    width: calc(100% - 60px);
+    background: radial-gradient(30% 100% at 50% 0%, #2D6BFA 0%, rgba(46, 32, 82, 0.00) 100%);
+  }
+
+  .logo-start{
+    flex:1;
+  }
+
+  .logo-end{
+    flex:1;
+    text-align:end;
+    width: auto;
+    height: 30px;
+  }
+
+  .logo {
+    width: auto;
+    height: 30px;
+  }
 
   .front {
     display: flex;
     flex-direction: column;
   }
 
-  .image-wrapper{
-    text-align: end;
-    width: 100%;
-    
-  }
-  .logo{
-
-  }
   .title{
     font-size:2.5em;
-    margin-bottom: 0.2em;
+    margin-bottom:0;
+    padding-bottom:0;
+    
   }
+
   .line{
     width:100%;
-
+    background-color: #2D6BFA
   }
+
   .author{
     font-size:1.3em;
-    margin-top: .5em;
+    font-weight: 700;
     margin-bottom: 0;
   }
+
   .company{
     font-size:.9em;
     margin-top: .1em;
+  }
+
+  blockquote{
+    color:white;
+    font-size: 16px;
+    border-color:#2D6BFA;
+    bottom: 70px;
+    left: 30px;
+    position: absolute;
+  }
+
+  a{
+    background-color: rgb(45 107 250 / 30%);
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  a > code {
+    background-color: rgb(45 107 250 / 30%);
+  }
+
+
+  code {
+    background-color: rgb(255 255 255 / 30%);
   }
 ---
 
   <!-- _paginate: skip -->
 
   <div class="front">
-    <h1 class="title"> Optimización de imágenes </h1>
+    <h1 class="title"> Dockerfile Avanzado </h1>
     <hr class="line"/>
     <p class="author">Arturo Silvelo</p>
     <p class="company">Try New Roads</p>
@@ -98,6 +153,8 @@ Para lograrlo, es importante aplicar varias técnicas y buenas prácticas, como 
 - Minimizar el número de capas combinando instrucciones RUN, COPY, etc.
 - Eliminar archivos temporales y cachés en la misma instrucción
 
+---
+
 ### Multi-stage builds
 
 Permite crear imágenes más ligeras y seguras usando varias etapas en el Dockerfile.
@@ -114,51 +171,7 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
 - Nombra las etapas (`AS build`, `AS produccion`) para facilitar el copiado selectivo.
 - Usa imágenes base "slim" o "alpine" cuando sea posible.
 
-No es necesario construir todas las fases del Dockerfile. Usando la opción --target, puedes crear una imagen solo hasta una etapa concreta.
-
----
-
-## Ejemplo: Multi-stage build
-
-```dockerfile
-FROM node:20 AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-COPY --from=build /app/dist ./dist
-CMD ["node", "dist/index.js"]
-```
-
-En este ejemplo:
-
-- La etapa `build` instala dependencias y compila la app.
-- La etapa `production` solo copia lo necesario para ejecutar.
-
----
-
-## ¿Cómo probar y comparar?
-
-Puedes comparar el tamaño de las imágenes construyendo ambos Dockerfiles en la carpeta [`ejemplos/multi-stage`](../ejemplos/multi-stage):
-
-```sh
-# Construir imagen tradicional
-# Construir imagen multi-stage
-# Ver tamaños
-docker images | findstr app-
-```
-
-Luego puedes ejecutar ambas imágenes:
-
-```sh
-docker run --rm -p 3000:3000 app-tradicional
-# o
-docker run --rm -p 3000:3000 app-multistage
-```
-
-Abre http://localhost:3000 para comprobar que ambas funcionan igual, pero la imagen multi-stage será más ligera.
+> No es necesario construir todas las fases del Dockerfile. Usando la opción --target, puedes crear una imagen solo hasta una etapa concreta.
 
 ---
 
@@ -190,109 +203,14 @@ Algunas estrategias recomendadas son:
   Así reduces el número de capas y aprovechas mejor la cache de Docker.
 - **Elimina archivos temporales y de build en la misma RUN:**  
   Si los borras en la misma instrucción donde se crean, no quedan guardados en ninguna capa.
+
+---
+
 - **Incluye un archivo `.dockerignore`:**  
   Excluye archivos y carpetas que no necesitas en la imagen (tests, docs, node_modules, etc.), evitando que se copien y generen capas innecesarias.
 
----
-
-### El orden de las capas y la cache
-
 - **El orden de las capas influye en el tiempo de build:**
   Si modificas una instrucción, todas las capas posteriores se reconstruyen. Coloca primero las instrucciones que cambian menos (por ejemplo, dependencias) y después las que cambian más (código fuente).
-
----
-
-## Ejemplo 1: Dockerfile mal optimizado
-
-```dockerfile
-FROM node:20
-
-COPY . .
-RUN apt-get update
-RUN apt-get install -y build-essential
-RUN npm install
-RUN npm run build
-CMD ["node", "app.js"]
-```
-
----
-
-## Ejemplo 2: Agrupar RUN en una sola instrucción
-
-```dockerfile
-FROM node:20
-
-COPY . .
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    npm install && \
-    npm run build
-CMD ["node", "app.js"]
-```
-
-Mejora:
-
-- Menos capas, build más rápido.
-
----
-
-## Ejemplo 3: Eliminar archivos temporales y dependencias de build
-
-```dockerfile
-FROM node:20
-
-COPY . .
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    npm install && \
-    npm run build && \
-    apt-get purge -y build-essential && \
-    rm -rf /var/lib/apt/lists/*
-CMD ["node", "app.js"]
-```
-
-Mejora:
-
-- La imagen final es más ligera, sin archivos de build ni temporales.
-
----
-
-## Ejemplo 4: Reordenar capas para aprovechar la cache
-
-```dockerfile
-FROM node:20
-
-COPY package*.json .
-RUN apt-get update && \
-    apt-get install -y build-essential && \
-    npm install && \
-    apt-get purge -y build-essential && \
-    rm -rf /var/lib/apt/lists/*
-COPY . .
-RUN npm run build
-CMD ["node", "app.js"]
-```
-
-Mejora:
-
-- Si solo cambias el código fuente, la instalación de dependencias se mantiene en cache y el build es mucho más rápido.
-
----
-
-## Ejemplo 5: Añadir .dockerignore
-
-`.dockerignore`:
-
-```
-node_modules
-tests
-docs
-*.log
-```
-
-Impacto:
-
-- No se copian archivos innecesarios al contexto de build, la imagen es más pequeña y el build más eficiente.
 
 ---
 
@@ -307,47 +225,12 @@ Estas variables ayudan a crear imágenes más flexibles, reutilizables y adaptab
 
 ---
 
-## Buenas prácticas y advertencias
+## Buenas prácticas
 
 - Usa `ARG` para valores temporales o que no deban quedar en la imagen.
 - Usa `ENV` para configuración que necesita el contenedor en ejecución.
 - No pongas secretos en `ENV` ni en el Dockerfile.
 - Documenta las variables y su propósito.
-
----
-
-## Ejemplo práctico: Uso conjunto de ARG y ENV
-
-Puedes probar este ejemplo en la carpeta [`ejemplos/arg-env`](../ejemplos/arg-env):
-
-```dockerfile
-FROM node:20
-
-# Definimos una variable de build (ARG)
-ARG MENSAJE="Hola desde ARG"
-
-# Pasamos el valor de ARG a una variable de entorno (ENV)
-ENV MENSAJE_ENV=$MENSAJE
-
-# Script que imprime el valor de la variable
-COPY app.js .
-
-CMD ["node", "app.js"]
-```
-
----
-
-### ¿Cómo probarlo?
-
-1. Construye la imagen con un valor personalizado:
-   ```sh
-   docker build -t arg-env-demo --build-arg MENSAJE="¡Mensaje personalizado!" .
-   ```
-2. Ejecuta el contenedor:
-   ```sh
-   docker run --rm arg-env-demo
-   ```
-   Verás en la salida el valor que pasaste por ARG.
 
 ---
 
@@ -359,65 +242,17 @@ En Docker, los secretos no deben almacenarse en la imagen. Deben gestionarse de 
 
 ---
 
-**Riesgos de una mala gestión:**
+##### Riesgos de una mala gestión
 
 - Los secretos quedan guardados en la imagen y pueden ser leídos por cualquiera con acceso.
 - Si subes la imagen a un registro público, los secretos quedan expuestos.
 - Los secretos pueden filtrarse en logs, capas intermedias o sistemas de CI/CD.
 
-**Buenas prácticas:**
+---
+
+##### Buenas prácticas
 
 - Nunca incluyas secretos en el Dockerfile ni en la imagen.
 - Usa mecanismos externos: Docker secrets (Swarm), variables de entorno solo en ejecución, archivos montados como volúmenes.
 - Usa archivos `.env` solo para desarrollo y nunca los subas a git.
 - Documenta cómo inyectar los secretos en producción.
-
----
-
-## Ejemplo: evolución en la gestión de secretos
-
-Veamos tres formas de gestionar un secreto (por ejemplo, una contraseña de base de datos):
-
-### 1. Dockerfile con secreto en claro (mala práctica)
-
-```dockerfile
-FROM alpine:3.20
-ENV DB_PASSWORD=supersecreto
-CMD ["sh", "-c", "echo El password es: $DB_PASSWORD"]
-```
-
-**Problema:** El secreto queda guardado en la imagen y es visible para cualquiera.
-
----
-
-### 2. Variable de entorno solo en ejecución
-
-```dockerfile
-FROM alpine:3.20
-CMD ["sh", "-c", "echo El password es: $DB_PASSWORD"]
-```
-
-Se ejecuta así:
-
-```sh
-docker run -e DB_PASSWORD=supersecreto <imagen>
-```
-
-**Ventaja:** El secreto no está en la imagen, solo se pasa al contenedor.
-
----
-
-### 3. Montar archivo externo
-
-```dockerfile
-FROM alpine:3.20
-CMD ["sh", "-c", "echo El password es: $(cat /run/secreto.txt)"]
-```
-
-Se ejecuta así:
-
-```sh
-docker run -v $(pwd)/db_password.txt:/run/secreto.txt <imagen>
-```
-
-**Ventaja:** El secreto está en un archivo externo, no en la imagen.
