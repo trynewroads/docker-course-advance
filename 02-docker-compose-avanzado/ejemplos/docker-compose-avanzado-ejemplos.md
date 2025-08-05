@@ -150,7 +150,7 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
 
 ---
 
-- Levantar las máquinas.
+- Levantar las máquinas
 
   ```bash
   docker compose  -f 1.anchor/docker-compose.yaml  up
@@ -167,7 +167,7 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
 
 ---
 
-- Creación:
+- Creación
   ```bash
   docker build -f 2.healthcheck/Dockerfile -t app-custom-health ../../01-dockerfile-avanzado/ejemplos/app/
   ```
@@ -177,7 +177,7 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
   docker run --rm --init -p3000:3000 app-custom-health
   ```
 
-- Docker compose:
+- Docker compose
 
   ```
   docker compose  -f 2.healthcheck/docker-compose.yaml  up
@@ -187,4 +187,70 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
   ```bash
   docker ps
   Up 55 seconds (healthy)
+  ```
+
+---
+
+# Ejemplo 3: Entornos
+
+---
+
+- Levantar las máquinas
+
+  ```
+  docker compose  -f 3.env/docker-compose.yaml up
+  ```
+
+- Comprobación
+  ```
+  app-env-file  | LOG_LEVEL=debug
+  ```
+
+---
+
+# Ejemplo 4: Entornos
+
+---
+
+- Levantar las máquinas
+
+  ```
+  docker compose  -f 3.env/docker-compose.yaml up
+  ```
+
+- Comprobación
+  ```
+  app-env-file  | LOG_LEVEL=debug
+  ```
+
+---
+
+# Ejemplo 5: Entornos Dockerfile
+
+- Creación
+
+  ```
+  docker build -f 5.env/Dockerfile.dev -t app-custom-dev ../../01-dockerfile-avanzado/ejemplos/app/
+  ```
+
+  ```
+  docker build -f 5.env/Dockerfile.prod -t app-custom-prod ../../01-dockerfile-avanzado/ejemplos/app/
+  ```
+
+- Ejecución
+  ```
+  docker run --rm --init --name app-custom-dev app-custom-dev
+  docker run --rm --init --name app-custom-dev app-custom-prod
+  ```
+
+---
+
+- Comprobación
+
+  ```
+  docker image ls
+
+  REPOSITORY        TAG       IMAGE ID       CREATED         SIZE
+  app-custom-dev    latest    b6df7158d052   4 minutes ago   1.18GB
+  app-custom-prod   latest    e094b76034e5   4 minutes ago   147MB
   ```

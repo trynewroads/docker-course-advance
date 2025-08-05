@@ -148,12 +148,8 @@ El parámetro `healthcheck` en Docker Compose permite definir una comprobación 
 
 ---
 
-### Definición
-
-- **En Dockerfile:** En el fichero de Dockerfile
-- **En Docker Compose:** En cada servicio de docker compose.
-
-En ambos casos puede configurarse con los siguientes parámetros:
+El parámetro `healthcheck` puede definirse tanto en el `Dockerfile` como en cada servicio dentro de Docker Compose.  
+En ambos casos, se dispone de varias opciones de configuración:
 
 - **test**: Comando que se ejecuta para comprobar la salud.
 - **interval**: Frecuencia de la comprobación.
@@ -171,120 +167,20 @@ Es posible emplear `depends_on` junto con la condición `service_healthy` para g
 
 ---
 
-## Entornos y variables
+## Gestión de entornos
 
-Docker Compose permite gestionar variables de entorno de forma flexible, facilitando la configuración para distintos entornos (desarrollo, producción, testing, etc.).
-
----
-
-### Formas de definir variables de entorno
-
-- **Directamente en el servicio:**
-  ```yaml
-  services:
-    app:
-      environment:
-        - DEBUG=true
-        - API_URL=https://api.example.com
-  ```
+En el desarrollo de aplicaciones, un entorno define el contexto en el que se ejecuta la aplicación: desarrollo, pruebas, integración o producción. Cada entorno puede requerir configuraciones, variables y servicios diferentes.
 
 ---
 
-- **Variables globales (nivel superior):**
+Docker y Docker Compose permiten gestionar estos entornos de varias formas:
 
-  ```yaml
-  environment:
-    GLOBAL_VAR: valor
-  services:
-    app:
-      image: alpine:3.20
-      environment:
-        - APP_VAR=valor2
-  ```
+- **Variables de entorno:** Permiten parametrizar el comportamiento de los servicios según el entorno. Se pueden definir directamente en el archivo Compose, en archivos .env o pasarlas desde el sistema.
 
-  Todas las variables definidas en el bloque global `environment` estarán disponibles en todos los servicios. Si una variable se repite en el bloque del servicio, este valor sobrescribe el global.
+- **Archivos Compose específicos:** Puedes crear archivos docker-compose adicionales (por ejemplo, docker-compose.dev.yaml, docker-compose.prod.yaml) para sobreescribir o extender la configuración base según el entorno.
 
 ---
 
-- **Usando archivos `.env` (uno o varios):**
-  Puedes crear uno o varios archivos `.env` y referenciarlos con `env_file`:
-  ```yaml
-  services:
-    app:
-      env_file:
-        - ./app.env
-        - ./common.env
-  ```
-  Ejemplo de archivo `app.env`:
-  ```env
-  DEBUG=true
-  API_URL=https://api.example.com
-  ```
+- **Múltiples Dockerfile:** Es posible mantener diferentes Dockerfile (por ejemplo, Dockerfile.dev, Dockerfile.prod) adaptados a las necesidades de cada entorno, seleccionando el adecuado en la sección build del Compose.
 
----
-
-- **Referenciando variables del sistema:**
-  ```yaml
-  services:
-    app:
-      environment:
-        - USER=${USER}
-        - HOME=${HOME}
-  ```
-
----
-
-- **Combinando env_file y environment:**
-  ```yaml
-  services:
-    app:
-      env_file:
-        - ./app.env
-      environment:
-        DEBUG: "false" # Sobrescribe el valor de DEBUG si está en app.env
-        EXTRA: "valor"
-  ```
-  Las variables definidas en `environment` sobrescriben las que vienen de `env_file` si tienen el mismo nombre.
-
----
-
-## Configuración para múltiples entornos
-
-Docker Compose permite adaptar la configuración según el entorno (desarrollo, producción, testing) usando archivos y variables específicas.
-
----
-
-- **Ejemplo de archivo base (`docker-compose.yml`):**
-
-  ```yaml
-  services:
-    app:
-      image: my-app:latest
-      env_file:
-        - .env
-  ```
-
-- **Ejemplo de archivo extendido (`docker-compose.dev.yml`):**
-
-  ```yaml
-  services:
-    app:
-      environment:
-        DEBUG: "true"
-      volumes:
-        - ./src:/app/src
-  ```
-
----
-
-- **Lanzar el entorno deseado:**
-
-  ```bash
-  docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.dev up
-  ```
-
-- **Diferencias típicas entre entornos:**
-  - Variables de entorno (DEBUG, API_URL, credenciales)
-  - Montaje de volúmenes (hot reload en dev)
-  - Puertos expuestos
-  - Servicios adicionales (mock, test, monitoring)
+Estas estrategias permiten adaptar fácilmente la infraestructura y el despliegue de la aplicación a cada fase del ciclo de vida.
