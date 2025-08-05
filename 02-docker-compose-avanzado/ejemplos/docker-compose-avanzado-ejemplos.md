@@ -191,36 +191,27 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
 
 ---
 
-# Ejemplo 3: Entornos
+# Ejemplo 3: Entornos ficheros .env
 
 ---
 
-- Levantar las máquinas
+- Creación
 
   ```
   docker compose  -f 3.env/docker-compose.yaml up
   ```
 
-- Comprobación
-  ```
-  app-env-file  | LOG_LEVEL=debug
-  ```
+---
+
+# Ejemplo 4: Entornos docker compose
 
 ---
 
-# Ejemplo 4: Entornos
-
----
-
-- Levantar las máquinas
+- Creación
 
   ```
-  docker compose  -f 3.env/docker-compose.yaml up
-  ```
-
-- Comprobación
-  ```
-  app-env-file  | LOG_LEVEL=debug
+  docker compose -f 4.env/docker-compose.yaml -f 4.env/docker-compose.dev.yaml up
+  docker compose -f 4.env/docker-compose.yaml -f 4.env/docker-compose.prod.yaml up
   ```
 
 ---
