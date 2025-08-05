@@ -4,6 +4,8 @@ const express = require('express');
 const fs = require('fs');
 const winston = require('winston');
 const app = express();
+const { Pool } = require('pg');
+
 
 // Configuración de Winston
 const logger = winston.createLogger({
@@ -18,6 +20,14 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.Console()
   ]
+});
+
+const dbPool = new Pool({
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'postgres',
 });
 
 const PORT = process.env.PORT || 3000;
@@ -57,6 +67,15 @@ app.get('/healthcheck', (req, res) => {
 
 app.get('/secret', (req, res) => {  
   res.send(`Este es el secreto: ${SECRET}`);
+});
+
+app.get('/db-health', async (req, res) => {
+  try {
+    const result = await dbPool.query('SELECT NOW()');
+    res.json({ status: 'ok', time: result.rows[0].now });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
 });
 
 if (require.main === module) {

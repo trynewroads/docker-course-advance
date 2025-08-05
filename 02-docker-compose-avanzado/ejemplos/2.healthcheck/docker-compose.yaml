@@ -1,5 +1,6 @@
 services:
   custom:
+    container_name: app-custom
     image: app-custom
     ports:
       - "3000:3000"
@@ -13,12 +14,14 @@ services:
       retries: 3
 
   replica-custom:
+    container_name: app-custom-replica
     image: app-custom
     ports:
       - "4000:3000"
     environment: *env
 
-  replica-custom-2:
+  app-custom-unhealthy:
+    container_name: app-custom-unhealthy
     image: app-custom
     ports:
       - "5000:3000"
@@ -28,3 +31,33 @@ services:
       interval: 5s
       timeout: 10s
       retries: 3
+
+  app-custom-dependency:
+    container_name: app-custom-dependency
+    image: app-custom
+    ports:
+      - "5001:3000"
+    environment: *env
+    depends_on:
+      app-custom-unhealthy:
+        condition: service_healthy
+
+  db:
+    container_name: db-postgres
+    image: postgres:alpine
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+    environment:
+      POSTGRES_PASSWORD: postgres
+  app-custom-db:
+    container_name: app-custom-db
+    image: app-custom
+    ports:
+      - "6000:3000"
+    environment: *env
+    depends_on:
+      db:
+        condition: service_healthy

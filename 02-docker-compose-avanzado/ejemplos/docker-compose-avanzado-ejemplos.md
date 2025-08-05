@@ -167,10 +167,14 @@ docker build -f Dockerfile -t app-custom ../../01-dockerfile-avanzado/ejemplos/a
 
 ---
 
+- Creación:
+  ```bash
+  docker build -f 2.healthcheck/Dockerfile -t app-custom-health ../../01-dockerfile-avanzado/ejemplos/app/
+  ```
 - Levantar las máquinas.
 
-  ```bash
-  docker compose  -f 1.anchor/docker-compose.yaml  up
+  ```
+  docker run --rm --init -p3000:3000 app-custom-health
   ```
 
 - Docker compose:
