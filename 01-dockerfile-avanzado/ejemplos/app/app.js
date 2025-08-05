@@ -1,9 +1,27 @@
 // Ejemplo con Express
+
 const express = require('express');
 const fs = require('fs');
+const winston = require('winston');
 const app = express();
 
+// Configuración de Winston
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] ${level}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console()
+  ]
+});
+
 const PORT = process.env.PORT || 3000;
+
 
 // Función para obtener el secreto desde diferentes fuentes
 function getSecret() {
@@ -13,7 +31,7 @@ function getSecret() {
     try {
       return fs.readFileSync(secretFile, 'utf8').trim();
     } catch (err) {
-      console.log('Error leyendo archivo de secreto:', err.message);
+      logger.error('Error leyendo archivo de secreto: ' + err.message);
     }
   }
 
@@ -33,20 +51,24 @@ app.get('/', (req, res) => {
   res.send('¡Hola desde Node.js en Docker!');
 });
 
+app.get('/healthcheck', (req, res) => {  
+  res.send({status: 'ok'});
+});
+
 app.get('/secret', (req, res) => {  
   res.send(`Este es el secreto: ${SECRET}`);
 });
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Servidor Express escuchando en puerto ${PORT}`);
-    console.log(`Secreto configurado: ${SECRET !== undefined ? 'Sí' : 'No'}`);
+    logger.info(`Servidor Express escuchando en puerto ${PORT}`);
+    logger.debug(`Secreto configurado: ${SECRET !== undefined ? 'Sí' : 'No'}`);
     if (fs.existsSync('/run/secrets/secret.txt')) {
-      console.log('Secreto cargado desde archivo montado');
+      logger.debug('Secreto cargado desde archivo montado');
     } else if (process.env.SECRET) {
-      console.log('Secreto cargado desde variable de entorno');
+      logger.debug('Secreto cargado desde variable de entorno');
     } else {
-      console.log('No hay secreto configurado');
+      logger.warn('No hay secreto configurado');
     }
   });
 }

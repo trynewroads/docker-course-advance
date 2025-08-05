@@ -1,0 +1,30 @@
+services:
+  custom:
+    image: app-custom
+    ports:
+      - "3000:3000"
+    environment: &env
+      - PORT=3000
+      - LOG_LEVEL=debug
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthcheck"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+
+  replica-custom:
+    image: app-custom
+    ports:
+      - "4000:3000"
+    environment: *env
+
+  replica-custom-2:
+    image: app-custom
+    ports:
+      - "5000:3000"
+    environment: *env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthchecks"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
