@@ -13,3 +13,6 @@ services:
       - DEBUG_REQUEST=true
       - USE_DB=false
     command: ["npm", "run", "start:dev"]
+    depends_on:
+      db:
+        condition: service_healthy
