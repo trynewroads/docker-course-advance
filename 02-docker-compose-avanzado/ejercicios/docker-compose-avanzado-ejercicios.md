@@ -136,4 +136,9 @@ Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar
 
 ### 1.1 Creación healthcheck
 
+Crea un healthcheck en el Dockerfile del backend que compruebe periódicamente la salud de la API.
+El healthcheck debe realizar una petición HTTP al endpoint /healthcheck y marcar el contenedor como healthy solo si la respuesta es satisfactoria.
+
 ### 1.2 Creación de entornos
+
+Configura el backend para soportar diferentes entornos (desarrollo y producción) utilizando Docker Compose y variables de entorno.
