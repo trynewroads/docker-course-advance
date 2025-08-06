@@ -1,0 +1,12 @@
+services:
+  app-development:
+    image: app-custom
+    env_file:
+      - .env.dev
+    volumes:
+      - ../../../01-dockerfile-avanzado/ejemplos/app/:/app
+
+  app-production:
+    image: app-custom
+    env_file:
+      - .env.prod
