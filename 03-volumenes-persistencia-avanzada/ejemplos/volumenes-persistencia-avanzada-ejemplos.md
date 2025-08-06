@@ -197,7 +197,32 @@ La aplicación utiliza las siguientes **variables de entorno**:
   docker compose -f docker-compose.yaml up
 
   docker run --rm -v uploads-data:/data -v $(pwd)/backups:/backups alpine sh -c "tar xzvf /backups/uploads-backup-xxxx-xxx.tar -C /data"
+  ```
 
+---
+
+# Ejemplo 2: Backup base de datos
+
+---
+
+- Creación del backup
+
+  ```bash
+  docker exec -t <nombre_o_id_del_contenedor_db> pg_dump -U user mydb > backups/db-backup-$(date +%Y%m%d-%H%M%S).sql
+  ```
+
+- Eliminación
+
+  ```bash
+  docker compose down --volumes
+  ```
+
+- Restauración del backup
+
+  ```bash
+  docker compose -f docker-compose.yaml up
+
+  cat backups/db-backup-20250806-134107.sql | docker exec -i <nombre_contenedor_db> psql -U user mydb
   ```
 
 ---
