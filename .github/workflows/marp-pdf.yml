@@ -3,7 +3,7 @@ name: Publicar PDF de slides en GitHub Pages
 on:
   push:
     paths:
-      - "**/slides/*.md"
+      - "**/*.md"
       - ".github/workflows/marp-pdf.yml"
 
 jobs:
