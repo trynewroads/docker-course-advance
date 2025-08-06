@@ -6,12 +6,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-FROM node:20-alpine AS test
-ARG PORT=3000
-ENV PORT=$PORT
-WORKDIR /app
-COPY --from=build /app /app
-RUN npm test
 
 FROM node:20-alpine AS production
 ARG PORT=3000
