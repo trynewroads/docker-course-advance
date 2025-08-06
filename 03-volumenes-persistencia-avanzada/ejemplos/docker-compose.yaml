@@ -31,5 +31,11 @@ services:
 
 volumes:
   uploads-data:
+    name: uploads-data
+    driver: local
   logs-data:
+    name: logs-data
+    driver: local
   pgdata:
+    name: pgdata
+    driver: local
