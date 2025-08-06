@@ -1,0 +1,15 @@
+services:
+  backend:
+    container_name: backend-dev
+    build:
+      context: ../../backend/
+      dockerfile: ../02-docker-compose-avanzado/soluciones/Dockerfile.healthcheck
+      target: build
+    volumes:
+      - ../../backend/src:/app/src
+    environment:
+      - NODE_ENV=dev
+      - ENABLE_AUTH=false
+      - DEBUG_REQUEST=true
+      - USE_DB=false
+    command: ["npm", "run", "start:dev"]
