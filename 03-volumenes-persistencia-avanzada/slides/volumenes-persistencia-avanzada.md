@@ -1,56 +1,120 @@
 ---
 marp: true
 theme: default
-title: Volúmenes y Persistencia Avanzada
+title: Volumenes y persistencia
 paginate: true
-footer: "Volúmenes y Persistencia Avanzada"
+size: 16:9
+backgroundColor: #2E2052;
+color: #ffffff;
+footer: Volumenes y persistencia
 header: |
-  <div class="image-wrapper">
-    <img src="../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  <div class="logo-start">
+    <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
+  </div>
+  <div class="logo-end">
+    <img src="../../img/logo_white.png" alt="Logo Docker" class="logo" />
   </div>
 
 style: |
   section {
     display:flex;
   }
-  section > header {
-    width: 95%;
+
+  section > h2, h3, h4, h5{
+    border-bottom: 2px solid #2D6BFA;
+    padding-bottom: .3rem;
   }
+
+  section::after, header, footer {
+    font-weight: 700;
+    color: white;
+  }
+
+  section > header {
+    display: flex;
+    top: 0;
+    width: calc(100% - 60px);
+    background: radial-gradient(30% 100% at 50% 0%, #2D6BFA 0%, rgba(46, 32, 82, 0.00) 100%);
+  }
+
+  .logo-start{
+    flex:1;
+  }
+
+  .logo-end{
+    flex:1;
+    text-align:end;
+    width: auto;
+    height: 30px;
+  }
+
+  .logo {
+    width: auto;
+    height: 30px;
+  }
+
   .front {
     display: flex;
     flex-direction: column;
   }
-  .image-wrapper{
-    text-align: end;
-    width: 100%;
-  }
-  .logo{}
+
   .title{
     font-size:2.5em;
-    margin-bottom: 0.2em;
+    margin-bottom:0;
+    padding-bottom:0;
+    
   }
+
   .line{
     width:100%;
+    background-color: #2D6BFA
   }
+
   .author{
     font-size:1.3em;
-    margin-top: .5em;
+    font-weight: 700;
     margin-bottom: 0;
   }
+
   .company{
     font-size:.9em;
     margin-top: .1em;
   }
+
+  blockquote{
+    color:white;
+    font-size: 16px;
+    border-color:#2D6BFA;
+    bottom: 70px;
+    left: 30px;
+    position: absolute;
+  }
+
+  a{
+    background-color: rgb(45 107 250 / 30%);
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  a > code {
+    background-color: rgb(45 107 250 / 30%);
+  }
+
+
+  code {
+    background-color: rgb(255 255 255 / 30%);
+  }
 ---
 
-<!-- _paginate: skip -->
+  <!-- _paginate: skip -->
 
-<div class="front">
-  <h1 class="title"> Volúmenes y Persistencia Avanzada </h1>
-  <hr class="line"/>
-  <p class="author">Arturo Silvelo</p>
-  <p class="company">Try New Roads</p>
-</div>
+  <div class="front">
+    <h1 class="title"> Dockerfile Avanzado </h1>
+    <hr class="line"/>
+    <p class="author">Arturo Silvelo</p>
+    <p class="company">Try New Roads</p>
+  </div>
 
 ---
 
@@ -63,9 +127,9 @@ En el contexto de Docker, los backups suelen centrarse en los volúmenes y bases
 
 ## 1. Backups incrementales, diferenciales y completos
 
-- Un backup completo copia todos los datos cada vez.
-- Un backup incremental solo copia los cambios desde el último backup (completo o incremental).
-- Un backup diferencial copia los cambios desde el último backup completo.
+- **Un backup completo** copia todos los datos cada vez.
+- **Un backup incremental** solo copia los cambios desde el último backup (completo o incremental).
+- **Un backup diferencial** copia los cambios desde el último backup completo.
 
 ---
 
@@ -174,6 +238,8 @@ cat backup.sql | docker exec -i mi_postgres psql -U postgres mi_db
 
 ## 3. Automatización de backups
 
+---
+
 ### Ventajas de automatizar
 
 - Reduce errores humanos y olvidos.
@@ -260,6 +326,8 @@ fi
 
 ## 4. Verificación y restauración de backups
 
+---
+
 ### ¿Por qué verificar los backups?
 
 - Un backup no verificado puede estar corrupto o incompleto.
@@ -302,5 +370,3 @@ docker run --rm \
 ```bash
 cat pg_backup-2025-07-29.sql | docker exec -i mi_postgres psql -U postgres mi_db
 ```
-
----
