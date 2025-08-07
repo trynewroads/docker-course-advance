@@ -1,1 +1,0 @@
-Esto es un archivo de test que debería ser ignorado por el .dockerignore.

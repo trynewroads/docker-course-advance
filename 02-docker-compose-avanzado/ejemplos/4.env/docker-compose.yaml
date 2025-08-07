@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: ../../../01-dockerfile-avanzado/ejemplos/app/
+      dockerfile: ../../../02-docker-compose-avanzado/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000

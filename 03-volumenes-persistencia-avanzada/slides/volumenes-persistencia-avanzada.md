@@ -1,56 +1,120 @@
 ---
 marp: true
 theme: default
-title: Volúmenes y Persistencia Avanzada
+title: Volumenes y persistencia
 paginate: true
-footer: "Volúmenes y Persistencia Avanzada"
+size: 16:9
+backgroundColor: #2E2052;
+color: #ffffff;
+footer: Volumenes y persistencia
 header: |
-  <div class="image-wrapper">
-    <img src="../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  <div class="logo-start">
+    <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
+  </div>
+  <div class="logo-end">
+    <img src="../../img/logo_white.png" alt="Logo Docker" class="logo" />
   </div>
 
 style: |
   section {
     display:flex;
   }
-  section > header {
-    width: 95%;
+
+  section > h2, h3, h4, h5{
+    border-bottom: 2px solid #2D6BFA;
+    padding-bottom: .3rem;
   }
+
+  section::after, header, footer {
+    font-weight: 700;
+    color: white;
+  }
+
+  section > header {
+    display: flex;
+    top: 0;
+    width: calc(100% - 60px);
+    background: radial-gradient(30% 100% at 50% 0%, #2D6BFA 0%, rgba(46, 32, 82, 0.00) 100%);
+  }
+
+  .logo-start{
+    flex:1;
+  }
+
+  .logo-end{
+    flex:1;
+    text-align:end;
+    width: auto;
+    height: 30px;
+  }
+
+  .logo {
+    width: auto;
+    height: 30px;
+  }
+
   .front {
     display: flex;
     flex-direction: column;
   }
-  .image-wrapper{
-    text-align: end;
-    width: 100%;
-  }
-  .logo{}
+
   .title{
     font-size:2.5em;
-    margin-bottom: 0.2em;
+    margin-bottom:0;
+    padding-bottom:0;
+    
   }
+
   .line{
     width:100%;
+    background-color: #2D6BFA
   }
+
   .author{
     font-size:1.3em;
-    margin-top: .5em;
+    font-weight: 700;
     margin-bottom: 0;
   }
+
   .company{
     font-size:.9em;
     margin-top: .1em;
   }
+
+  blockquote{
+    color:white;
+    font-size: 16px;
+    border-color:#2D6BFA;
+    bottom: 70px;
+    left: 30px;
+    position: absolute;
+  }
+
+  a{
+    background-color: rgb(45 107 250 / 30%);
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  a > code {
+    background-color: rgb(45 107 250 / 30%);
+  }
+
+
+  code {
+    background-color: rgb(255 255 255 / 30%);
+  }
 ---
 
-<!-- _paginate: skip -->
+  <!-- _paginate: skip -->
 
-<div class="front">
-  <h1 class="title"> Volúmenes y Persistencia Avanzada </h1>
-  <hr class="line"/>
-  <p class="author">Arturo Silvelo</p>
-  <p class="company">Try New Roads</p>
-</div>
+  <div class="front">
+    <h1 class="title"> Dockerfile Avanzado </h1>
+    <hr class="line"/>
+    <p class="author">Arturo Silvelo</p>
+    <p class="company">Try New Roads</p>
+  </div>
 
 ---
 
@@ -63,9 +127,9 @@ En el contexto de Docker, los backups suelen centrarse en los volúmenes y bases
 
 ## 1. Backups incrementales, diferenciales y completos
 
-- Un backup completo copia todos los datos cada vez.
-- Un backup incremental solo copia los cambios desde el último backup (completo o incremental).
-- Un backup diferencial copia los cambios desde el último backup completo.
+- **Un backup completo** copia todos los datos cada vez.
+- **Un backup incremental** solo copia los cambios desde el último backup (completo o incremental).
+- **Un backup diferencial** copia los cambios desde el último backup completo.
 
 ---
 
@@ -81,49 +145,6 @@ En el contexto de Docker, los backups suelen centrarse en los volúmenes y bases
 
 - `rsync`: ideal para backups incrementales, ya que solo copia los archivos nuevos o modificados desde el último backup. Muy útil para sincronizar directorios de forma eficiente.
 - `restic`, `borg`, `duplicity`: soluciones avanzadas que permiten realizar backups completos, incrementales y diferenciales, con deduplicación, cifrado y gestión de versiones. Son recomendadas para estrategias de backup más complejas y seguras.
-
----
-
-### Ejemplo: Backup completo
-
-Copia todo el contenido del volumen, sin importar si ha cambiado o no.  
-Ideal para hacer un backup completo semanal.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd):/backup \
-  alpine \
-  tar czvf /backup/backup-completo-$(date +%F).tar.gz -C /data .
-```
-
----
-
-### Ejemplo: Backup incremental con rsync
-
-Solo copia los archivos nuevos o modificados desde el último backup.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd)/backup:/backup \
-  alpine \
-  sh -c "apk add --no-cache rsync && rsync -av --delete /data/ /backup/"
-```
-
----
-
-### Ejemplo: Backup diferencial con tar
-
-Copia solo los archivos modificados desde el último backup completo.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd):/backup \
-  alpine \
-  sh -c 'find /data -type f -newer /backup/backup-completo.tar.gz -print0 | xargs -0 tar rvf /backup/backup-diferencial.tar'
-```
 
 ---
 
@@ -155,110 +176,33 @@ docker run --rm \
 
 ---
 
-**Ejemplo: Backup y restauración de PostgreSQL desde un contenedor**
-
-_Backup:_
-
-```bash
-docker exec mi_postgres pg_dump -U postgres mi_db > backup.sql
-```
-
-_Restauración:_
-
-```bash
-cat backup.sql | docker exec -i mi_postgres psql -U postgres mi_db
-
-```
-
----
-
 ## 3. Automatización de backups
 
-### Ventajas de automatizar
+---
 
-- Reduce errores humanos y olvidos.
-- Permite mantener una política de backups regular y predecible.
-- Facilita la integración con sistemas de monitorización y alertas.
+### Ventajas de automatizar backups
+
+- **Evita errores y olvidos humanos:** Los backups se realizan siempre, sin depender de la intervención manual.
+- **Asegura la recuperación ante fallos:** Permite restaurar datos fácilmente en caso de pérdida o corrupción.
+- **Facilita el cumplimiento de políticas:** Ayuda a cumplir normativas y auditorías sobre retención y protección de datos.
+- **Optimiza el tiempo:** Libera al equipo de tareas repetitivas, permitiendo centrarse en otras prioridades.
 
 ---
 
-### Uso de cron en un contenedor dedicado
+### Estrategias de automatización
 
-- Puedes crear un contenedor que ejecute backups periódicamente usando cron.
-- Así, el proceso de backup queda aislado y es fácilmente portable entre entornos.
-
----
-
-**Ejemplo de Dockerfile para backup automatizado:**
-
-```dockerfile
-FROM alpine
-RUN apk add --no-cache bash tar curl
-COPY backup.sh /backup.sh
-RUN chmod +x /backup.sh
-CMD ["/backup.sh"]
-```
-
----
-
-**Ejemplo de script backup.sh:**
-
-```bash
-#!/bin/sh
-tar czvf /backup/backup-$(date +%F).tar.gz -C /data .
-```
-
-- Monta el volumen de datos en `/data` y el de backups en `/backup` al ejecutar el contenedor.
-
----
-
-### Ejecución periódica con supercronic
-
-- Usa un contenedor tipo [supercronic](https://github.com/aptible/supercronic) para ejecutar el script de backup periódicamente con cron.
-
-```yaml
-services:
-  backup:
-    image: alpine
-    command: supercronic /etc/crontab
-    volumes:
-      - datos_app:/data
-      - ./backups:/backup
-      - ./backup.sh:/backup.sh
-      - ./crontab:/etc/crontab
-```
-
-Archivo `crontab` de ejemplo:
-
-```
-0 2 * * * /backup.sh >> /backup/backup.log 2>&1
-```
-
----
-
-### Ejemplo de logs y alertas ante fallo de backup
-
-- Redirige la salida del script a un archivo de log para auditoría.
-- Puedes añadir notificación por email o webhook en caso de error:
-
-```bash
-#!/bin/sh
-set -e
-LOGFILE="/backup/backup.log"
-if tar czvf /backup/backup-$(date +%F).tar.gz -C /data . >> $LOGFILE 2>&1; then
-  echo "Backup OK: $(date)" >> $LOGFILE
-else
-  echo "Backup FAILED: $(date)" | tee -a $LOGFILE
-  # Ejemplo de alerta por webhook (adaptar a tu sistema)
-  curl -X POST -H 'Content-type: application/json' \
-    --data '{"text":"Backup fallido en '$(date)'"}' \
-    https://hooks.slack.com/services/TU_WEBHOOK
-fi
-```
+- **Tareas programadas:**  
+  Utiliza cron jobs en el host o en contenedores dedicados para ejecutar scripts de backup periódicamente (por ejemplo, cada noche).
+- **Contenedores especializados:**  
+  Usa imágenes Docker diseñadas para realizar backups automáticos y gestionarlos, como [docker-volume-backup](https://github.com/offen/docker-volume-backup).
+- **Monitorización y alertas:**  
+  Configura notificaciones ante fallos en los backups o falta de espacio en disco.
 
 ---
 
 ## 4. Verificación y restauración de backups
+
+---
 
 ### ¿Por qué verificar los backups?
 
@@ -272,35 +216,3 @@ fi
 - **Verificación de integridad:** Usa checksums (`sha256sum`, `md5sum`) para comprobar que los archivos no se han corrompido.
 - **Pruebas de restauración:** Restaura backups en un entorno de pruebas y valida que los servicios y datos funcionan correctamente.
 - **Automatización:** Programa verificaciones periódicas y registra los resultados.
-
----
-
-**Ejemplo: Verificar integridad de un backup**
-
-```bash
-sha256sum backup-completo-2025-07-29.tar.gz > backup-completo-2025-07-29.tar.gz.sha256
-sha256sum -c backup-completo-2025-07-29.tar.gz.sha256
-```
-
----
-
-**Ejemplo: Restaurar un volumen Docker desde un backup**
-
-```bash
-docker volume create datos_app_restaurado
-docker run --rm \
-  -v datos_app_restaurado:/data \
-  -v $(pwd):/backup \
-  alpine \
-  tar xzvf /backup/backup-completo-2025-07-29.tar.gz -C /data
-```
-
----
-
-**Ejemplo: Restaurar una base de datos PostgreSQL**
-
-```bash
-cat pg_backup-2025-07-29.sql | docker exec -i mi_postgres psql -U postgres mi_db
-```
-
----

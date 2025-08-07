@@ -1,0 +1,11 @@
+services:
+  app:
+    volumes:
+      - ../../../01-dockerfile-avanzado/ejemplos/app/:/app
+    environment:
+      - LOG_LEVEL=debug
+      - DB_HOST=localhost
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=app_db

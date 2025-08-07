@@ -1,0 +1,41 @@
+services:
+  app:
+    image: app-base-3
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads-data:/app/uploads
+      - logs-data:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=mydb
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  uploads-data:
+    name: uploads-data
+    driver: local
+  logs-data:
+    name: logs-data
+    driver: local
+  pgdata:
+    name: pgdata
+    driver: local
