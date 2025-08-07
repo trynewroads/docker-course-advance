@@ -1,0 +1,31 @@
+{
+  "repositories": [
+    {
+      "name": "local-repo",
+      "location": "/repos/local",
+      "password": "supersecreto"
+    }
+  ],
+  "sources": [
+    {
+      "name": "uploads-backup",
+      "path": "/uploads-backup"
+    },
+    {
+      "name": "logs-backup",
+      "path": "/logs-backup"
+    }
+  ],
+  "schedules": [
+    {
+      "source": "uploads-backup",
+      "repository": "local-repo",
+      "cron": "* * * * *"  
+    },
+    {
+      "source": "logs-backup",
+      "repository": "local-repo",
+      "cron": "* * * * *" 
+    }
+  ]
+}

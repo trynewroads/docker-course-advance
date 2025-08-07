@@ -148,49 +148,6 @@ En el contexto de Docker, los backups suelen centrarse en los volúmenes y bases
 
 ---
 
-### Ejemplo: Backup completo
-
-Copia todo el contenido del volumen, sin importar si ha cambiado o no.  
-Ideal para hacer un backup completo semanal.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd):/backup \
-  alpine \
-  tar czvf /backup/backup-completo-$(date +%F).tar.gz -C /data .
-```
-
----
-
-### Ejemplo: Backup incremental con rsync
-
-Solo copia los archivos nuevos o modificados desde el último backup.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd)/backup:/backup \
-  alpine \
-  sh -c "apk add --no-cache rsync && rsync -av --delete /data/ /backup/"
-```
-
----
-
-### Ejemplo: Backup diferencial con tar
-
-Copia solo los archivos modificados desde el último backup completo.
-
-```bash
-docker run --rm \
-  -v datos_app:/data \
-  -v $(pwd):/backup \
-  alpine \
-  sh -c 'find /data -type f -newer /backup/backup-completo.tar.gz -print0 | xargs -0 tar rvf /backup/backup-diferencial.tar'
-```
-
----
-
 **Consideraciones:**
 
 - Los backups incrementales requieren todos los backups anteriores para una restauración completa.
@@ -219,108 +176,27 @@ docker run --rm \
 
 ---
 
-**Ejemplo: Backup y restauración de PostgreSQL desde un contenedor**
-
-_Backup:_
-
-```bash
-docker exec mi_postgres pg_dump -U postgres mi_db > backup.sql
-```
-
-_Restauración:_
-
-```bash
-cat backup.sql | docker exec -i mi_postgres psql -U postgres mi_db
-
-```
-
----
-
 ## 3. Automatización de backups
 
 ---
 
-### Ventajas de automatizar
+### Ventajas de automatizar backups
 
-- Reduce errores humanos y olvidos.
-- Permite mantener una política de backups regular y predecible.
-- Facilita la integración con sistemas de monitorización y alertas.
-
----
-
-### Uso de cron en un contenedor dedicado
-
-- Puedes crear un contenedor que ejecute backups periódicamente usando cron.
-- Así, el proceso de backup queda aislado y es fácilmente portable entre entornos.
+- **Evita errores y olvidos humanos:** Los backups se realizan siempre, sin depender de la intervención manual.
+- **Asegura la recuperación ante fallos:** Permite restaurar datos fácilmente en caso de pérdida o corrupción.
+- **Facilita el cumplimiento de políticas:** Ayuda a cumplir normativas y auditorías sobre retención y protección de datos.
+- **Optimiza el tiempo:** Libera al equipo de tareas repetitivas, permitiendo centrarse en otras prioridades.
 
 ---
 
-**Ejemplo de Dockerfile para backup automatizado:**
+### Estrategias de automatización
 
-```dockerfile
-FROM alpine
-RUN apk add --no-cache bash tar curl
-COPY backup.sh /backup.sh
-RUN chmod +x /backup.sh
-CMD ["/backup.sh"]
-```
-
----
-
-**Ejemplo de script backup.sh:**
-
-```bash
-#!/bin/sh
-tar czvf /backup/backup-$(date +%F).tar.gz -C /data .
-```
-
-- Monta el volumen de datos en `/data` y el de backups en `/backup` al ejecutar el contenedor.
-
----
-
-### Ejecución periódica con supercronic
-
-- Usa un contenedor tipo [supercronic](https://github.com/aptible/supercronic) para ejecutar el script de backup periódicamente con cron.
-
-```yaml
-services:
-  backup:
-    image: alpine
-    command: supercronic /etc/crontab
-    volumes:
-      - datos_app:/data
-      - ./backups:/backup
-      - ./backup.sh:/backup.sh
-      - ./crontab:/etc/crontab
-```
-
-Archivo `crontab` de ejemplo:
-
-```
-0 2 * * * /backup.sh >> /backup/backup.log 2>&1
-```
-
----
-
-### Ejemplo de logs y alertas ante fallo de backup
-
-- Redirige la salida del script a un archivo de log para auditoría.
-- Puedes añadir notificación por email o webhook en caso de error:
-
-```bash
-#!/bin/sh
-set -e
-LOGFILE="/backup/backup.log"
-if tar czvf /backup/backup-$(date +%F).tar.gz -C /data . >> $LOGFILE 2>&1; then
-  echo "Backup OK: $(date)" >> $LOGFILE
-else
-  echo "Backup FAILED: $(date)" | tee -a $LOGFILE
-  # Ejemplo de alerta por webhook (adaptar a tu sistema)
-  curl -X POST -H 'Content-type: application/json' \
-    --data '{"text":"Backup fallido en '$(date)'"}' \
-    https://hooks.slack.com/services/TU_WEBHOOK
-fi
-```
+- **Tareas programadas:**  
+  Utiliza cron jobs en el host o en contenedores dedicados para ejecutar scripts de backup periódicamente (por ejemplo, cada noche).
+- **Contenedores especializados:**  
+  Usa imágenes Docker diseñadas para realizar backups automáticos y gestionarlos, como [docker-volume-backup](https://github.com/offen/docker-volume-backup).
+- **Monitorización y alertas:**  
+  Configura notificaciones ante fallos en los backups o falta de espacio en disco.
 
 ---
 

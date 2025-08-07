@@ -153,7 +153,7 @@ La aplicación utiliza las siguientes **variables de entorno**:
 - Levantar las máquinas
 
   ```bash
-  docker compose -f docker-compose.backup.yaml up
+  docker compose -f docker-compose.yaml up
   ```
 
 ---
@@ -223,6 +223,24 @@ La aplicación utiliza las siguientes **variables de entorno**:
   docker compose -f docker-compose.yaml up
 
   cat backups/db-backup-20250806-134107.sql | docker exec -i <nombre_contenedor_db> psql -U user mydb
+  ```
+
+---
+
+# Ejemplo 3: Automatización Backups
+
+---
+
+- Creación del backup
+
+  ```bash
+  docker compose -f 3.automatic-backups/docker-compose.yaml up
+  ```
+
+- Eliminación
+
+  ```bash
+  docker compose down --volumes
   ```
 
 ---
