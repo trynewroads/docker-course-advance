@@ -244,16 +244,3 @@ La aplicación utiliza las siguientes **variables de entorno**:
   ```
 
 ---
-
-# Ejemplos 4: Verificación de imágenes
-
-- Creación checksum
-
-  ```
-  sha256sum backups/uploads-backup-xxxxx.tar.gz > backups/uploads-backup-xxxxx.tar.gz.checksum.sha256
-  ```
-
-- Verificación checksum
-  ```
-  sha256sum -c backups/uploads-backup-xxxxx.tar.gz.sha256
-  ```
