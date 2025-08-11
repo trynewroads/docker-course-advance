@@ -1,0 +1,90 @@
+ARG PORT=3000
+ARG DEBUG_REQUEST=false
+ARG ENABLE_AUTH=true
+ARG DB_HOST=localhost
+ARG DB_PORT=5432
+ARG USE_DB=false
+
+# Etapa de build
+FROM node:20 AS build
+
+WORKDIR /app
+
+# Variables de entorno para build
+ENV NODE_ENV=development
+
+# Copia primero solo package.json y package-lock.json para aprovechar cache de dependencias
+COPY package*.json ./
+RUN npm install
+
+# Ahora sí, copia el resto del código fuente
+COPY . .
+
+# Compila y limpia en una sola capa para reducir capas intermedias
+RUN npm run build && npm cache clean --force
+
+# Etapa de test
+FROM node:20 AS test
+WORKDIR /app
+
+ARG PORT
+ARG DEBUG_REQUEST
+ARG ENABLE_AUTH
+ARG DB_HOST
+ARG DB_PORT
+ARG USE_DB
+
+# Variables de entorno para tests
+ENV NODE_ENV=test \
+    PORT=$PORT \ 
+    DEBUG_REQUEST=$DEBUG_REQUEST \
+    ENABLE_AUTH=$ENABLE_AUTH \
+    DB_HOST=$DB_HOST \
+    DB_PORT=$DB_PORT \
+    USE_DB=$USE_DB
+
+ENV DEFAULT_USER=admin \
+    DEFAULT_PASS=12345678 \
+    JWT_SECRET=secretKey \    
+    DB_USER=todo_user \
+    DB_PASS=todo_pass \
+    DB_NAME=todo_db
+
+COPY --from=build /app /app
+RUN npm run test
+
+# Etapa de producción
+FROM node:20-alpine AS production
+
+ARG PORT
+ARG DEBUG_REQUEST
+ARG ENABLE_AUTH
+ARG DB_HOST
+ARG DB_PORT
+ARG USE_DB
+
+WORKDIR /app
+
+# Variables de entorno para producción
+ENV NODE_ENV=production \
+    PORT=$PORT \ 
+    DEBUG_REQUEST=$DEBUG_REQUEST \
+    ENABLE_AUTH=$ENABLE_AUTH \
+    DB_HOST=$DB_HOST \
+    DB_PORT=$DB_PORT \
+    USE_DB=$USE_DB
+
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json .
+
+# Instala solo dependencias de producción y limpia cache en la misma capa
+RUN npm install --omit=dev && npm cache clean --force
+
+RUN apk add --no-cache curl
+
+HEALTHCHECK --interval=5s --timeout=10s --retries=3 \
+  CMD curl -f http://localhost:$PORT/api/healthcheck || exit 1
+
+EXPOSE $PORT
+
+CMD ["node", "dist/main.js"]
