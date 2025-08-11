@@ -1,56 +1,120 @@
 ---
 marp: true
 theme: default
-title: Docker Registry Privado
+title: Docker Registro Privado
 paginate: true
-footer: "Docker Registry Privado"
+size: 16:9
+backgroundColor: #2E2052;
+color: #ffffff;
+footer: Docker Registro Privado
 header: |
-  <div class="image-wrapper">
-    <img src="../../img/TNR_01.png" alt="Logo Empresa" width="120" class="logo" />
+  <div class="logo-start">
+    <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
+  </div>
+  <div class="logo-end">
+    <img src="../../img/logo_white.png" alt="Logo Docker" class="logo" />
   </div>
 
 style: |
   section {
     display:flex;
   }
-  section > header {
-    width: 95%;
+
+  section > h2, h3, h4, h5{
+    border-bottom: 2px solid #2D6BFA;
+    padding-bottom: .3rem;
   }
+
+  section::after, header, footer {
+    font-weight: 700;
+    color: white;
+  }
+
+  section > header {
+    display: flex;
+    top: 0;
+    width: calc(100% - 60px);
+    background: radial-gradient(30% 100% at 50% 0%, #2D6BFA 0%, rgba(46, 32, 82, 0.00) 100%);
+  }
+
+  .logo-start{
+    flex:1;
+  }
+
+  .logo-end{
+    flex:1;
+    text-align:end;
+    width: auto;
+    height: 30px;
+  }
+
+  .logo {
+    width: auto;
+    height: 30px;
+  }
+
   .front {
     display: flex;
     flex-direction: column;
   }
-  .image-wrapper{
-    text-align: end;
-    width: 100%;
-  }
-  .logo{}
+
   .title{
     font-size:2.5em;
-    margin-bottom: 0.2em;
+    margin-bottom:0;
+    padding-bottom:0;
+    
   }
+
   .line{
     width:100%;
+    background-color: #2D6BFA
   }
+
   .author{
     font-size:1.3em;
-    margin-top: .5em;
+    font-weight: 700;
     margin-bottom: 0;
   }
+
   .company{
     font-size:.9em;
     margin-top: .1em;
   }
+
+  blockquote{
+    color:white;
+    font-size: 16px;
+    border-color:#2D6BFA;
+    bottom: 70px;
+    left: 30px;
+    position: absolute;
+  }
+
+  a{
+    background-color: rgb(45 107 250 / 30%);
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  a > code {
+    background-color: rgb(45 107 250 / 30%);
+  }
+
+
+  code {
+    background-color: rgb(255 255 255 / 30%);
+  }
 ---
 
-<!-- _paginate: skip -->
+  <!-- _paginate: skip -->
 
-<div class="front">
-  <h1 class="title"> Docker Registry Privado </h1>
-  <hr class="line"/>
-  <p class="author">Arturo Silvelo</p>
-  <p class="company">Try New Roads</p>
-</div>
+  <div class="front">
+    <h1 class="title"> Docker Registro Privado </h1>
+    <hr class="line"/>
+    <p class="author">Arturo Silvelo</p>
+    <p class="company">Try New Roads</p>
+  </div>
 
 ---
 
@@ -65,11 +129,6 @@ style: |
 
 - Permite compartir imágenes con la comunidad o equipos de trabajo.
 - Muchas imágenes oficiales y de terceros están disponibles públicamente.
-- Ejemplo de uso:
-  ```bash
-  docker pull nginx
-  docker push miusuario/miproyecto:latest
-  ```
 
 ---
 
@@ -80,37 +139,19 @@ style: |
 
 ---
 
-### Ventajas y desventajas de un registro privado
-
 **Ventajas:**
 
 - Control total sobre tus imágenes y su acceso.
-- Sin límites de subida/descarga impuestos por terceros.
 - Privacidad y seguridad para imágenes internas o sensibles.
-- Integración directa con CI/CD y despliegues internos.
 
 **Desventajas:**
 
 - Requiere administración y mantenimiento.
-- Debes encargarte de la seguridad (TLS, autenticación).
 - Consumo de recursos y almacenamiento en tu infraestructura.
 
 ---
 
 ## Gestión de un Docker Registry privado
-
-### ¿Qué gestiones se pueden hacer?
-
-- Subir (push) imágenes al registry.
-- Descargar (pull) imágenes del registry.
-- Eliminar imágenes antiguas o no deseadas.
-- Limpiar espacio (garbage collection).
-- Consultar el catálogo de imágenes almacenadas.
-- Proteger el acceso (autenticación, scopes y TLS).
-
----
-
-### ¿Cómo hacer dichas gestiones?
 
 **Subir una imagen:**
 
@@ -118,8 +159,6 @@ style: |
 docker tag miimagen:latest localhost:5000/miimagen:latest
 docker push localhost:5000/miimagen:latest
 ```
-
----
 
 **Descargar una imagen:**
 
@@ -129,35 +168,10 @@ docker pull localhost:5000/miimagen:latest
 
 ---
 
-**Eliminar una imagen:**
-
-- Habilita el borrado añadiendo `REGISTRY_STORAGE_DELETE_ENABLED=true` al contenedor.
-- Borra el manifiesto vía API:
-  ```bash
-  curl -X DELETE http://localhost:5000/v2/miimagen/manifests/<digest>
-  ```
-- Ejecuta el garbage collector:
-  ```bash
-  docker exec registry registry garbage-collect /etc/docker/registry/config.yml
-  ```
-
-**Consultar el catálogo de imágenes:**
-
-```bash
-curl http://localhost:5000/v2/_catalog
-```
-
----
-
 ### Scopes y namespaces en los nombres de imágenes
 
-- Puedes organizar imágenes usando "scopes" o namespaces, que funcionan como carpetas o prefijos.
-- El nombre completo de una imagen puede incluir uno o varios niveles de scope:
-  - Ejemplo:
-    ```
-    mi-registry.local:5000/miempresa/app-backend:1.0
-    mi-registry.local:5000/devops/monitoring/prometheus:latest
-    ```
+- Se pueden organizar imágenes usando "scopes" o namespaces, que funcionan como carpetas o prefijos.
+- El nombre completo de una imagen puede incluir uno o varios niveles de scope.
 - Esto permite separar proyectos, equipos o entornos dentro del mismo registry.
 
 ---
@@ -170,22 +184,8 @@ curl http://localhost:5000/v2/_catalog
 
 ---
 
-**Cómo usar scopes al subir imágenes:**
-
-```bash
-docker tag miimagen:latest localhost:5000/miempresa/miimagen:latest
-docker push localhost:5000/miempresa/miimagen:latest
-```
-
-- Puedes anidar tantos niveles como necesites:  
-  `localhost:5000/area/proyecto/servicio:tag`
-
----
-
 ### Herramientas gráficas para gestión
 
 - **Portus**: Interfaz web avanzada para Docker Registry, con gestión de usuarios, equipos y políticas.
 - **Harbor**: Solución completa con UI, autenticación, escaneo de vulnerabilidades y replicación.
 - **Docker Registry UI**: Herramienta ligera para explorar y borrar imágenes desde el navegador.
-
----
