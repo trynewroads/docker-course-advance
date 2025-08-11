@@ -1,12 +1,12 @@
 ---
 marp: true
 theme: default
-title: Dockerfile Avanzado - Ejercicios
+title: Volumenes y persistencia - Ejercicios
 paginate: true
 size: 16:9
 backgroundColor: #2E2052;
 color: #ffffff;
-footer: Dockerfile Avanzado - Ejercicios
+footer: Volumenes y persistencia - Ejercicios
 header: |
   <div class="logo-start">
     <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
@@ -111,7 +111,6 @@ style: |
 
   <div class="front">
     <h1 class="title"> Dockerfile Avanzado </h1>
-    <h2 class="title"> Ejercicios Prácticos </h2>
     <hr class="line"/>
     <p class="author">Arturo Silvelo</p>
     <p class="company">Try New Roads</p>
@@ -119,122 +118,35 @@ style: |
 
 ---
 
-# Soluciones: Ejercicios Dockerfile Avanzado
+## Ejercicios
+
+Estos ejercicios prácticos te permitirán aplicar las técnicas avanzadas de Dockerfile aprendidas en los ejemplos. Trabajarás con aplicaciones reales:
+
+- **Backend**: API REST desarrollada con **NestJS** (TypeScript)
+- **Frontend**: Aplicación web desarrollada con **Angular** (TypeScript)
+
+Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar aplicando las técnicas aprendidas.
+
+> **Nota:** Para ejecutar los ejercicios, asegúrate de estar en el directorio `ejercicios/` y seguir las instrucciones de cada sección.
 
 ---
 
-## 0. Base
-
-**Construcción:**
-
-```bash
-docker build -f ../ejercicios/backend/Dockerfile -t backend-base ../../backend/
-```
-
-**Ejecución:**
-
-```bash
-docker run --rm --init -p3000:3000 backend-base
-```
-
-**Comprobación:**
-
-```
-curl localhost:3000/api/healthcheck
-# Respuesta
-{"status":"ok"}
-```
+# Ejercicio 1: Backend NestJS
 
 ---
 
-## 1. Multi-stage (multi-stage)
+### 1.1 Backup de PostgreSQL
 
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.multistage -t backend-multistage ../../backend/
-```
-
-**Ejecución:**
-
-```bash
-docker run -p 3000:3000 backend-multistage
-```
+Crea backup manual para la base de datos PostgreSQL del backend NestJS.
 
 ---
 
-## 2. Optimización de capas (optimizacion-capas)
+### 1.2 Verifica el backup
 
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.optimizado -t backend-optimizado ../../backend/
-```
-
-**Ejecución:**
-
-```bash
-docker run -p 3000:3000 backend-optimizado
-```
+Implementa verificación de integridad del backup generado. Realiza una modificación y vuelve a comprobarlo.
 
 ---
 
-## 3. ARGS y ENV
+### 1.3 Restaura el backup
 
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.variables -t backend-variables ../../backend/
-```
-
----
-
-## 4. Secretos
-
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.seguro -t backend-seguro ../../backend/
-```
-
----
-
-## 5. Bonus
-
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.bonus -t backend-bonus ../../backend/
-```
-
----
-
-## Comprobaciones
-
-**Servidor:**
-
-```
-curl localhost:3000/api/healthcheck
-# Respuesta
-{"status":"ok"}
-```
-
-**Imágenes:**
-
-```
-docker image ls | grep backend
-```
-
----
-
-**Historial:**
-
-```
-docker history <id>
-```
-
-**Variables:**
-
-```
-docker exec -it <id> env
-```
+Implementa el proceso completo de restauración con validación previa.

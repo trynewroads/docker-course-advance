@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    container_name: backend-prod
+    image: backend
+    ports:
+      - 3000:3000
+    environment:
+      - DB_HOST=db
+      - USE_DB=true
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - DB_NAME=app_db
+      - NODE_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    container_name: frontend-prod
+    image: frontend
+    ports:
+      - 80:80
+    environment:
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=3000
+    depends_on:
+      backend:
+        condition: service_healthy

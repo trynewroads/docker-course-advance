@@ -41,17 +41,11 @@ services:
     container_name: backrest
     hostname: backrest
     volumes:
-      - ./backrest/data:/data
       - ./backrest/config:/config
-      - ./backrest/cache:/cache
-      - ./backrest/tmp:/tmp
       - ./backrest/backups:/repos/local
-      - uploads-data:/uploads-backup
-      - logs-data:/logs-backup
-    environment:
-      - BACKREST_DATA=/data
-      - XDG_CACHE_HOME=/cache
-      - BACKREST_CONFIG=/config/config.json
+      - uploads-data:/uploads-backup:ro
+      - logs-data:/logs-backup:ro
+
     ports:
       - "9898:9898"
 

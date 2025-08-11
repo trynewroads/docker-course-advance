@@ -1,12 +1,12 @@
 ---
 marp: true
 theme: default
-title: Dockerfile Avanzado - Ejercicios
+title: Volumenes y persistencia - Ejercicios
 paginate: true
 size: 16:9
 backgroundColor: #2E2052;
 color: #ffffff;
-footer: Dockerfile Avanzado - Ejercicios
+footer: Volumenes y persistencia - Ejercicios
 header: |
   <div class="logo-start">
     <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
@@ -111,7 +111,6 @@ style: |
 
   <div class="front">
     <h1 class="title"> Dockerfile Avanzado </h1>
-    <h2 class="title"> Ejercicios Prácticos </h2>
     <hr class="line"/>
     <p class="author">Arturo Silvelo</p>
     <p class="company">Try New Roads</p>
@@ -119,122 +118,67 @@ style: |
 
 ---
 
-# Soluciones: Ejercicios Dockerfile Avanzado
+# Soluciones: Ejercicios Persistencia de datos.
 
 ---
 
-## 0. Base
+### Preparación del escenario
 
 **Construcción:**
 
 ```bash
-docker build -f ../ejercicios/backend/Dockerfile -t backend-base ../../backend/
+docker build -f Dockerfile.backend -t backend ../../backend/
+docker build -f Dockerfile.frontend -t frontend ../../frontend/
+docker compose up -d
 ```
 
-**Ejecución:**
-
-```bash
-docker run --rm --init -p3000:3000 backend-base
-```
-
-**Comprobación:**
-
-```
-curl localhost:3000/api/healthcheck
-# Respuesta
-{"status":"ok"}
-```
+Acceder [http://localhost:3000/docs](http://localhost:3000/docs) ó [http://localhost](http://localhost), iniciar sesión y crear tareas.
 
 ---
 
-## 1. Multi-stage (multi-stage)
+### 1.1 Backup de PostgreSQL
 
-**Construcción:**
+- Creación del backup
 
-```bash
-docker build -f Dockerfile.multistage -t backend-multistage ../../backend/
-```
-
-**Ejecución:**
-
-```bash
-docker run -p 3000:3000 backend-multistage
-```
+  ```
+  docker exec -t db pg_dump -U postgres app_db > backups/db-backup-$(date +%Y%m%d-%H%M%S).sql
+  ```
 
 ---
 
-## 2. Optimización de capas (optimizacion-capas)
+### 1.2 Verifica el backup
 
-**Construcción:**
+- Creación del checksum y comprobación
 
-```bash
-docker build -f Dockerfile.optimizado -t backend-optimizado ../../backend/
-```
+  ```
+  sha256sum backups/db-backup-xxxxx.sql > backups/db-backup-xxxxx.sql.checksum.sha256
 
-**Ejecución:**
+  sha256sum -c backups/db-backup-xxxxx.sql.checksum.sha256
+  ```
 
-```bash
-docker run -p 3000:3000 backend-optimizado
-```
+- Modificar el fichero y volver a comprobar:
 
----
-
-## 3. ARGS y ENV
-
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.variables -t backend-variables ../../backend/
-```
+  ```
+  sha256sum -c backups/db-backup-xxxxx.sql.checksum.sha256
+  ```
 
 ---
 
-## 4. Secretos
+### 1.3 Restaura el backup
 
-**Construcción:**
+- Eliminar la base de datos
 
-```bash
-docker build -f Dockerfile.seguro -t backend-seguro ../../backend/
-```
+  ```
+  docker compose down --volumes
+  ```
 
----
+- Levantar el escenario y comprobar el estado
 
-## 5. Bonus
+  ```
+  docker compose up -d
+  ```
 
-**Construcción:**
-
-```bash
-docker build -f Dockerfile.bonus -t backend-bonus ../../backend/
-```
-
----
-
-## Comprobaciones
-
-**Servidor:**
-
-```
-curl localhost:3000/api/healthcheck
-# Respuesta
-{"status":"ok"}
-```
-
-**Imágenes:**
-
-```
-docker image ls | grep backend
-```
-
----
-
-**Historial:**
-
-```
-docker history <id>
-```
-
-**Variables:**
-
-```
-docker exec -it <id> env
-```
+- Restaurar la base de datos
+  ```
+  cat backups/db-backup-xxxxx.sql | docker exec -i db psql -U postgres app_db
+  ```
