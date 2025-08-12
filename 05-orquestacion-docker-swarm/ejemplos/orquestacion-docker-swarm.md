@@ -118,6 +118,10 @@ style: |
 
 ---
 
+# Ejemplo 1: Creación del entorno
+
+---
+
 - Crear red para los nodos
 
   ```
@@ -133,8 +137,13 @@ style: |
   -p 2377:2377 \
   -p 7946:7946 \
   -p 4789:4789 \
+  -p 3000:3000 \
+  -p 80:80 \
+  -p 8080:8080 \
   docker:dind
   ```
+
+---
 
 - Iniciar el swarm
 
@@ -142,13 +151,13 @@ style: |
   docker exec -it swarm-manager docker swarm init --advertise-addr eth0
   ```
 
----
-
 - Obtener token
 
   ```
   docker exec swarm-manager docker swarm join-token worker -q
   ```
+
+---
 
 - Crear nodos
 
@@ -191,24 +200,104 @@ style: |
 
 ---
 
+# Ejemplo 2: Uso de docker swarm
+
+---
+
 - Crear un servicio nginx
 
   ```
-  docker exec swarm-manager docker service create --name web --replicas 3 -p 8080:80 nginx
+  docker exec swarm-manager docker service create --name web --replicas 3 -p 80:80 nginx
   ```
 
-  ```
-  docker exec swarm-manager docker node update --availability pause swarm-worker1
-  ```
+- Listar Servicios
 
   ```
-  docker exec swarm-manager docker node update --availability drain swarm-worker1
+  docker exec swarm-manager docker service ls
   ```
 
+- Contenedores de un servicio
   ```
-  docker exec swarm-manager docker node update --availability active swarm-worker1
+  docker exec swarm-manager docker service ps web
   ```
 
+---
+
+- Escalar replicas
+
+  ```bash
+  docker exec swarm-manager docker service scale web=6
+  docker exec swarm-manager docker service ps web
   ```
-  docker stop swarm-worker1
+
+- Simulación fallo
+
+  ```bash
+  docker pause swarm-worker1
+  docker exec swarm-manager docker node ls
+
+  ID                            HOSTNAME        STATUS    AVAILABILITY   MANAGER STATUS   ENGINE VERSION
+  ksvdv6eycpata7sjqr20z75g0 *   swarm-manager   Ready     Active         Leader           28.3.3
+  waeftnwnr9n48zex5qu8ni2ti     swarm-worker1   Down      Active                          28.3.3
+  n40y7n14f892yn2e7omibf6sy     swarm-worker2   Ready     Active                          28.3.3
+  ```
+
+---
+
+- Recuperación
+
+  ```bash
+  docker unpause swarm-worker1
+  docker exec swarm-manager docker service ps web
+  ```
+
+- Balancear servicios
+  ```bash
+  docker exec swarm-manager docker service scale web=0
+  docker exec swarm-manager docker service scale web=6
+  docker exec swarm-manager docker service ps web
+  ```
+
+---
+
+# Ejemplo 3: Stacks
+
+---
+
+- Desplegar docker
+
+  ```
+  docker cp ejemplos/2.servicio/docker-compose.yaml swarm-manager:/docker-compose.yaml
+  docker exec swarm-manager  docker stack deploy -c docker-compose.yaml base
+  ```
+
+- Comprobar servicio
+
+  ```bash
+  docker exec swarm-manager docker stack ls
+  docker exec swarm-manager docker stack ps base
+  docker exec swarm-manager docker service ps base_app
+  ```
+
+- Escalar Servicio
+  ```bash
+  docker exec swarm-manager docker service scale base_app=4
+  ```
+
+---
+
+# Ejemplo 4: Secretos
+
+- Crear Secreto
+
+  ```
+  docker cp ejemplos/3.secretos/secret.txt swarm-manager:/secret.txt
+  docker exec swarm-manager  docker secret create secret.txt /secret.txt
+  ```
+
+- Desplegar stack
+
+  ```
+  docker cp ejemplos/3.secretos/docker-compose.yaml swarm-manager:/docker-compose-secrets.yaml
+  docker exec swarm-manager  docker stack deploy -c docker-compose-secrets.yaml base-secret
   ```
