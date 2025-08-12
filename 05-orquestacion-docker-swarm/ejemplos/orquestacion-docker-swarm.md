@@ -118,82 +118,97 @@ style: |
 
 ---
 
-## 1. Clúster local: Crear entorno de pruebas
+- Crear red para los nodos
 
-- ¿Qué es Docker Swarm? Motor de orquestación nativo de Docker para gestionar clústeres de contenedores.
-- Permite crear un clúster de nodos (máquinas físicas o virtuales) y desplegar servicios distribuidos.
-- Comando para inicializar un clúster en local:
-  ```bash
-  docker swarm init
   ```
-- Añadir nodos al clúster:
-  ```bash
-  docker swarm join --token <token> <ip_manager>:2377
+  docker network create --driver bridge swarm-net
   ```
 
----
+- Crear manager
 
-## 2. Despliegue: Gestionar stacks y rollback
+  ```
+  docker run -d --privileged --name swarm-manager \
+  --hostname swarm-manager \
+  --network swarm-net \
+  -p 2377:2377 \
+  -p 7946:7946 \
+  -p 4789:4789 \
+  docker:dind
+  ```
 
-- Un stack es un conjunto de servicios definidos en un archivo `docker-compose.yml` adaptado para Swarm.
-- Desplegar un stack:
-  ```bash
-  docker stack deploy -c docker-compose.yml mystack
+- Iniciar el swarm
+
   ```
-- Listar servicios y stacks:
-  ```bash
-  docker stack ls
-  docker service ls
-  ```
-- Rollback de un servicio:
-  ```bash
-  docker service update --rollback <service>
+  docker exec -it swarm-manager docker swarm init --advertise-addr eth0
   ```
 
 ---
 
-## 3. Escalado: Ajustar réplicas
+- Obtener token
 
-- Swarm permite escalar servicios fácilmente:
-  ```bash
-  docker service scale mystack_web=5
   ```
-- El orquestador distribuye las réplicas entre los nodos disponibles.
-
----
-
-## 4. Red overlay: Comunicación entre nodos
-
-- Swarm crea redes overlay para que los servicios se comuniquen entre nodos, incluso en diferentes hosts.
-- Crear una red overlay:
-  ```bash
-  docker network create -d overlay mi_red
+  docker exec swarm-manager docker swarm join-token worker -q
   ```
-- Los servicios conectados a la misma red overlay pueden comunicarse por nombre de servicio.
 
----
+- Crear nodos
 
-## 5. Secrets: Gestionar datos sensibles
+  ```
+  docker run -d --privileged --name swarm-worker1 \
+    --hostname swarm-worker1 \
+    --network swarm-net \
+    docker:dind
+  ```
 
-- Swarm permite gestionar secretos (contraseñas, claves, etc.) de forma segura.
-- Crear un secreto:
-  ```bash
-  echo "mi_password" | docker secret create db_password -
+  ```
+  docker run -d --privileged --name swarm-worker2 \
+    --hostname swarm-worker2 \
+    --network swarm-net \
+    docker:dind
   ```
 
 ---
 
-- Usar un secreto en un servicio:
-  ```yaml
-  services:
-    db:
-      image: mysql
-      secrets:
-        - db_password
-  secrets:
-    db_password:
-      external: true
+- Añadir nodos al swarm
   ```
-- Los secretos solo están disponibles en el contenedor mientras el servicio se está ejecutando.
+  docker exec swarm-worker1 docker swarm join --token $TOKEN swarm-manager:2377
+  docker exec swarm-worker2 docker swarm join --token $TOKEN swarm-manager:2377
+  ```
+- Mostrar nodos
+
+  ```
+  docker exec swarm-manager docker node ls
+  ```
 
 ---
+
+- Limpiar swarm
+
+  ```
+  docker stop swarm-manager swarm-worker1 swarm-worker2
+  docker rm swarm-manager swarm-worker1 swarm-worker2
+  docker network rm swarm-net
+  ```
+
+---
+
+- Crear un servicio nginx
+
+  ```
+  docker exec swarm-manager docker service create --name web --replicas 3 -p 8080:80 nginx
+  ```
+
+  ```
+  docker exec swarm-manager docker node update --availability pause swarm-worker1
+  ```
+
+  ```
+  docker exec swarm-manager docker node update --availability drain swarm-worker1
+  ```
+
+  ```
+  docker exec swarm-manager docker node update --availability active swarm-worker1
+  ```
+
+  ```
+  docker stop swarm-worker1
+  ```

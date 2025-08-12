@@ -1,0 +1,89 @@
+services:
+  app:
+    image: 192.168.1.41:8081/swarm/app-base
+    secrets:
+      - secret.txt
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=mydb
+    deploy:
+      # Modo y réplicas
+      mode: replicated
+      replicas: 3
+
+      # Configuración de actualizaciones
+      update_config:
+        parallelism: 1 # Cuántos contenedores actualizar simultáneamente
+        delay: 10s
+        failure_action: rollback # Qué hacer si falla la actualización
+        monitor: 30s # Tiempo de monitoreo después de cada actualización
+        max_failure_ratio: 0.3 # % de fallos antes de hacer rollback
+        order: start-first # Orden de actualización
+
+      # Configuración de rollback
+      rollback_config:
+        parallelism: 2
+        delay: 5s
+        failure_action: pause
+        monitor: 20s
+        max_failure_ratio: 0
+        order: stop-first
+
+      # Política de reinicio
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+      # Colocación
+      placement:
+        constraints:
+          - node.role == worker # Solo en nodos worker
+        preferences:
+          - spread: node.hostname # Distribuir entre diferentes hostnames
+        max_replicas_per_node: 2 # Máximo 1 réplica por nodo
+
+      # Recursos
+      resources:
+        limits:
+          cpus: "1.0" # Máximo 1.0 CPUs
+          memory: 1G # Máximo 1GB RAM
+        reservations:
+          cpus: "0.5" # Reserva mínima 0.5 CPUs
+          memory: 512M # Reserva mínima 512MB RAM
+
+      # Labels para el servicio
+      labels:
+        - "app=myapp"
+        - "version=1.0"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydb
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager # DB solo en manager
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+secrets:
+  secret.txt:
+    external: true
