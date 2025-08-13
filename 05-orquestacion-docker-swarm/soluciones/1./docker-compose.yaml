@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d appdb"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    image: ghcr.io/trynewroads/course-backend:1.0.0
+    ports:
+      - 3001:3000
+    environment:
+      - DB_HOST=db
+      - USE_DB=true
+      - DB_USER=postgres
+      - DB_PASS=postgres
+      - DB_NAME=app_db
+      - NODE_ENV=production
+
+  web:
+    image: ghcr.io/trynewroads/course-frontend:1.0.0
+    ports:
+      - "8089:80"
+    environment:
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=3000
