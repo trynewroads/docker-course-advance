@@ -118,82 +118,50 @@ style: |
 
 ---
 
-## 1. Clúster local: Crear entorno de pruebas
+## ¿Qué es Docker Swarm?
 
-- ¿Qué es Docker Swarm? Motor de orquestación nativo de Docker para gestionar clústeres de contenedores.
-- Permite crear un clúster de nodos (máquinas físicas o virtuales) y desplegar servicios distribuidos.
-- Comando para inicializar un clúster en local:
-  ```bash
-  docker swarm init
-  ```
-- Añadir nodos al clúster:
-  ```bash
-  docker swarm join --token <token> <ip_manager>:2377
-  ```
+Orquestador integrado en Docker que agrupa varias máquinas y mantiene servicios con las réplicas que defines. Simple para alta disponibilidad básica y escalado rápido.
+
+Elementos clave:
+
+- **Nodo:** máquina que participa en el clúster.
+- **Servicio:** Contenedor y réplicas.
+- **Stack:** conjunto de servicios desplegados y gestionados juntos.
 
 ---
 
-## 2. Despliegue: Gestionar stacks y rollback
+### Acciones principales
 
-- Un stack es un conjunto de servicios definidos en un archivo `docker-compose.yml` adaptado para Swarm.
-- Desplegar un stack:
-  ```bash
-  docker stack deploy -c docker-compose.yml mystack
-  ```
-- Listar servicios y stacks:
-  ```bash
-  docker stack ls
-  docker service ls
-  ```
-- Rollback de un servicio:
-  ```bash
-  docker service update --rollback <service>
-  ```
+- **Añadir nodos:** sumar máquinas (workers o managers) para más capacidad o alta disponibilidad.
+- **Ver estado:** revisar nodos, servicios y tareas para saber si todo funciona y cómo se reparte.
+- **Creación de servicios:** definir imagen, réplicas y cómo se conectan (puertos, redes, secretos).
+- **Escalado de servicios:** subir o bajar el número de réplicas.
+- **Rebalanceo:** redistribuir réplicas tras caídas o nuevos nodos para aprovechar recursos.
+- **Creación de stacks:** desplegar varios servicios relacionados.
 
 ---
 
-## 3. Escalado: Ajustar réplicas
+## Red overlay en Swarm
 
-- Swarm permite escalar servicios fácilmente:
-  ```bash
-  docker service scale mystack_web=5
-  ```
-- El orquestador distribuye las réplicas entre los nodos disponibles.
+La red overlay conecta contenedores de servicios que pueden estar en máquinas distintas como si estuvieran en la misma red virtual.
 
----
+Ventajas:
 
-## 4. Red overlay: Comunicación entre nodos
-
-- Swarm crea redes overlay para que los servicios se comuniquen entre nodos, incluso en diferentes hosts.
-- Crear una red overlay:
-  ```bash
-  docker network create -d overlay mi_red
-  ```
-- Los servicios conectados a la misma red overlay pueden comunicarse por nombre de servicio.
+- Se crea una sola vez y los servicios que se unen se ven por nombre.
+- Cada servicio obtiene resolución DNS interna.
+- El tráfico viaja cifrado entre nodos (túneles) sin que tengas que configurarlo.
+- **Aísla:** una overlay distinta separa entornos.
+- **Permite escalar:** nuevas réplicas se añaden y ya pueden ser alcanzadas por el mismo nombre.
 
 ---
 
-## 5. Secrets: Gestionar datos sensibles
+## Secrets
 
-- Swarm permite gestionar secretos (contraseñas, claves, etc.) de forma segura.
-- Crear un secreto:
-  ```bash
-  echo "mi_password" | docker secret create db_password -
-  ```
+Un secret es un dato sensible (contraseña, token, clave) que el clúster guarda cifrado y solo entrega a los servicios que lo piden. No va dentro de la imagen ni se escribe en disco de forma visible en las tareas.
 
----
+Ventajas:
 
-- Usar un secreto en un servicio:
-  ```yaml
-  services:
-    db:
-      image: mysql
-      secrets:
-        - db_password
-  secrets:
-    db_password:
-      external: true
-  ```
-- Los secretos solo están disponibles en el contenedor mientras el servicio se está ejecutando.
-
----
+- **Aislamiento:** solo las tareas del servicio que lo declara lo reciben.
+- **Cifrado:** viaja y se almacena cifrado en los managers.
+- No queda en capas de la imagen ni en variables de entorno globales.
+- **Acceso mínimo:** cada servicio solo monta lo que necesita.
