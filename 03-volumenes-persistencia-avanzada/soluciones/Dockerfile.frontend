@@ -18,6 +18,11 @@ RUN npm run build && npm cache clean --force
 
 FROM nginx:1.29-alpine AS production
 
+LABEL org.opencontainers.image.source="https://github.com/trynewroads/course-frontend" \
+      org.opencontainers.image.description="Frontend Angular para visualizar y gestionar tareas con filtros y edición" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+
 ARG BACKEND_HOST=localhost
 ARG BACKEND_PORT=3000
 

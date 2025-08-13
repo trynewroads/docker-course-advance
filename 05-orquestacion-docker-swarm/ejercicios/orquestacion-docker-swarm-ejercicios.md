@@ -117,3 +117,24 @@ style: |
   </div>
 
 ---
+
+## Ejercicios
+
+Estos ejercicios prácticos te permitirán aplicar las técnicas avanzadas de Dockerfile aprendidas en los ejemplos. Trabajarás con aplicaciones reales:
+
+- **Backend**: API REST desarrollada con **NestJS** (TypeScript)
+- **Frontend**: Aplicación web desarrollada con **Angular** (TypeScript)
+
+Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar aplicando las técnicas aprendidas.
+
+> **Nota:** Para ejecutar los ejercicios, asegúrate de estar en el directorio `ejercicios/` y seguir las instrucciones de cada sección.
+
+---
+
+# Ejercicio 1
+
+---
+
+### 1.1 Montar los servicios en swarm
+
+Despliega en Docker Swarm el entorno existente compuesto por backend (NestJS), frontend (Angular) y una base de datos Postgres, de forma que el frontend pueda consumir la API y la API se conecte a la base de datos.

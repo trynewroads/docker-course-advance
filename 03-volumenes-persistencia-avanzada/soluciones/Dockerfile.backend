@@ -56,6 +56,11 @@ RUN npm run test
 # Etapa de producción
 FROM node:20-alpine AS production
 
+LABEL org.opencontainers.image.source="https://github.com/trynewroads/course-backend" \
+      org.opencontainers.image.description="API REST Node.js para crear, actualizar y gestionar tareas con autenticación" \
+      org.opencontainers.image.licenses="Apache-2.0"
+
+
 ARG PORT
 ARG DEBUG_REQUEST
 ARG ENABLE_AUTH
