@@ -116,14 +116,20 @@ style: |
     font-size: 16px;
   }
 
-  .image-container{
-      
+  figure{
+    display: block;    
   }
 
-  .image-container img {
+  figcaption{
+    padding: 2px;
+    text-align: center;
+    font-size: 18px;
+    font-bold: bold;
+  }
+
+  figure img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 ---
 
@@ -191,11 +197,10 @@ Para lograrlo, es importante aplicar varias técnicas y buenas prácticas, como 
 
 ---
 
-<div class=image-container>
-
+<figure class=image-container>
 <img src="./../../img/node_height.png" alt="Images Height">
-
-<div>
+<figcaption>Peso de imágenes de node</figcaption>
+<figure>
 
 ---
 

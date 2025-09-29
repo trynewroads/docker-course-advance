@@ -74,8 +74,13 @@ ENV NODE_ENV=production \
     DB_PORT=$DB_PORT \
     USE_DB=$USE_DB
 
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package.json .
+# Crear usuario no-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+
+COPY --from=build --chown=nodeuser:nodejs /app/dist ./dist
+COPY --from=build --chown=nodeuser:nodejs /app/package.json .
 
 # Instala solo dependencias de producción y limpia cache en la misma capa
 RUN npm install --omit=dev && npm cache clean --force

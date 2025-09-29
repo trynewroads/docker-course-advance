@@ -128,8 +128,6 @@ Estos ejercicios prácticos te permitirán aplicar las técnicas avanzadas de Do
 
 Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar aplicando las técnicas aprendidas.
 
-> **Nota:** Para ejecutar los ejercicios, asegúrate de estar en el directorio `ejercicios/` y seguir las instrucciones de cada sección.
-
 ---
 
 # Ejercicio 1: Backend NestJS
@@ -140,15 +138,6 @@ Cada ejercicio incluye un **Dockerfile base sin optimizar** que deberás mejorar
 
 Optimizar progresivamente el Dockerfile del backend NestJS aplicando cada una de las técnicas vistas en el temario.
 
-## Aplicación
-
-La aplicación backend está ubicada en `../../backend/` y contiene:
-
-- API REST con NestJS
-- Base de datos con TypeORM
-- Autenticación JWT
-- Documentación Swagger
-
 ---
 
 ### 1.1 Dockerfile Base
@@ -158,7 +147,7 @@ Analiza el `Dockerfile` sin optimizar ubicado en `backend/Dockerfile`.
 **Comando para construir:**
 
 ```bash
-docker build -f backend/Dockerfile -t backend-sin-optimizar ../../backend
+docker build -f backend/Dockerfile -t backend-base backend
 ```
 
 ---
@@ -168,8 +157,24 @@ docker build -f backend/Dockerfile -t backend-sin-optimizar ../../backend
 Crea `Dockerfile.multistage` que implemente multi-stage builds:
 
 - **Etapa 1 (build)**: Compila la aplicación TypeScript
+  - `npm run build`
 - **Etapa 2 (test)**: Ejecuta los tests sobre el código compilado
+  - `npm test`
 - **Etapa 3 (production)**: Solo archivos necesarios para ejecutar
+
+---
+
+- Construcción
+
+  ```bash
+  docker build -f Dockerfile.multistage -t backend-multi backend
+  ```
+
+- Verificación
+
+  ```bash
+  docker image ls backend*
+  ```
 
 ---
 
@@ -183,11 +188,39 @@ Crea `Dockerfile.optimizado` mejorando el anterior:
 
 ---
 
+- Construcción
+
+  ```bash
+  docker build -f Dockerfile.multistage -t backend-optimizado backend
+  ```
+
+- Verificación
+
+  ```bash
+  docker image ls backend*
+  ```
+
+---
+
 ### 1.4 Variables ARG y ENV
 
 Crea `Dockerfile.variables` que gestione correctamente las variables:
 
 - Usa **ARG** para las variables de entorno.
+
+---
+
+- Construcción
+
+  ```bash
+  docker build -f Dockerfile.variables -t backend-variables backend
+  ```
+
+- Verificación
+
+  ```bash
+  docker run -rm --init backend-variables env
+  ```
 
 ---
 
@@ -197,3 +230,37 @@ Crea `Dockerfile.seguro` que elimine todos los secretos hardcodeados:
 
 - Variables sensibles se pasan solo en runtime (`-e`)
 - Opción para leer secretos desde archivos montados
+
+---
+
+- Construcción
+
+  ```bash
+  docker build -f Dockerfile.seguro -t backend-seguro backend
+  ```
+
+- Verificación
+
+  ```bash
+  docker run -rm --init backend-seguro env
+  ```
+
+---
+
+### 1.6 Gestión de usuario
+
+Crea `Dockerfile.no-root` que utilize un usuario no root.
+
+---
+
+- Construcción
+
+  ```bash
+  docker build -f Dockerfile.no-root -t backend-no-root backend
+  ```
+
+- Verificación
+
+  ```bash
+  docker run -rm --init backend-no-root whoami
+  ```
