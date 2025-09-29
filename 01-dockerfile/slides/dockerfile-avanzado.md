@@ -248,7 +248,7 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
     COPY --from=build /app /app
     RUN npm test
 
-    FROM node:20 AS production
+    FROM node:20-alpine AS production
     WORKDIR /app
     COPY --from=build /app/app.js .
     COPY --from=build /app/package.json .
@@ -312,6 +312,117 @@ Algunas estrategias recomendadas son:
 
 ---
 
+<div class="container-column">
+<div class="small">
+
+- `Dockerfile:` Imagen con capas mal optimizadas (versión original)
+
+  ```dockerfile
+  FROM node:20
+  WORKDIR /app
+  COPY . .
+  RUN apt-get update
+  RUN apt-get install -y build-essential
+  RUN npm install
+  RUN npm test
+  CMD ["node", "app.js"]
+  ```
+
+- Creación:
+
+  ```bash
+  docker build -f 3.optimizacion-capas/Dockerfile -t app-mal-optimizado app
+  ```
+
+</div>
+<div class="small">
+
+- `Dockerfile.1-agrupa-run:` Agrupando comandos RUN
+
+  ```dockerfile
+  FROM node:20
+  WORKDIR /app
+  COPY . .
+  RUN apt-get update && \
+      apt-get install -y build-essential && \
+      npm install
+  RUN npm test
+  CMD ["node", "app.js"]
+  ```
+
+- Creación:
+
+  ```bash
+  docker build -f 3.optimizacion-capas/Dockerfile.1 -t app-fase1 app
+  ```
+
+    </div>
+  </div>
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `Dockerfile.2-limpieza:` Agrupando RUN y limpiando archivos temporales
+
+  ```dockerfile
+  FROM node:20
+  WORKDIR /app
+  COPY . .
+  RUN apt-get update && \
+      apt-get install -y build-essential && \
+      npm install && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/*
+  RUN npm test
+  CMD ["node", "app.js"]
+  ```
+
+- Creación:
+
+  ```bash
+  docker build -f 3.optimizacion-capas/Dockerfile.2 -t app-fase2 app
+  ```
+
+  </div>
+
+<div class="small">
+
+- `Dockerfile.3-optimizado:` Capas optimizadas y bien organizadas
+
+  ```dockerfile
+  FROM node:20
+  WORKDIR /app
+
+  # Instalar dependencias del sistema primero (se cachea)
+  RUN apt-get update && \
+      apt-get install -y build-essential && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/*
+
+  # Copiar solo package.json primero (mejor cache)
+  COPY package*.json ./
+  RUN npm install
+
+  # Copiar código fuente al final
+  COPY . .
+  RUN npm test
+
+  CMD ["node", "app.js"]
+  ```
+
+- Creación:
+
+  ```bash
+  docker build -f 3.optimizacion-capas/Dockerfile.3 -t app-fase3 app
+  ```
+
+  </div>
+  </div>
+
+---
+
 ## Variables ARG y ENV en Docker
 
 Las variables `ARG` y `ENV` permiten personalizar tanto la construcción de la imagen como el comportamiento de los contenedores.
@@ -329,6 +440,74 @@ Estas variables ayudan a crear imágenes más flexibles, reutilizables y adaptab
 - Usa `ENV` para configuración que necesita el contenedor en ejecución.
 - No pongas secretos en `ENV` ni en el Dockerfile.
 - Documenta las variables y su propósito.
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- `Dockerfile:` Uso de ARG para PORT y ENV para SECRET
+
+  ```dockerfile
+  FROM node:20
+
+  # ARG para el puerto (se puede pasar en build time)
+  ARG PORT=3000
+
+  # ENV para el secreto (variable de entorno)
+  ENV SECRET="mi-secreto-por-defecto"
+
+  # Pasar el valor de ARG a una ENV para que esté disponible en runtime
+  ENV PORT=$PORT
+
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm install
+  COPY . .
+  RUN npm test
+
+  # Exponer el puerto
+  EXPOSE $PORT
+
+  CMD ["node", "app.js"]
+  ```
+
+- Creación con valores por defecto:
+
+  ```bash
+  docker build -f 4.arg-env/Dockerfile -t app-arg-env app
+  ```
+
+</div>
+<div class=small>
+
+- Creación con puerto personalizado:
+
+  ```bash
+  docker build -f 4.arg-env/Dockerfile --build-arg PORT=8080 -t app-arg-env-8080 app
+  ```
+
+- Verificación:
+
+  ```bash
+  # Ver variables de entorno del contenedor
+  docker run --rm app-arg-env env | grep -E "(PORT|SECRET)"
+  docker run --rm app-arg-env-8080 env | grep -E "(PORT|SECRET)"
+  ```
+
+- Ejecución y comprobación:
+
+  ```bash
+  docker run --rm --init -p 3000:3000 app-arg-env
+  curl http://localhost:3000
+  curl http://localhost:3000/secret
+  docker run --rm --init -p 8080:8080 app-arg-env-8080
+  curl http://localhost:8000
+  curl http://localhost:8000/secret
+  ```
+
+</div>
+</div>
 
 ---
 
@@ -354,3 +533,80 @@ En Docker, los secretos no deben almacenarse en la imagen. Deben gestionarse de 
 - Usa mecanismos externos: Docker secrets (Swarm), variables de entorno solo en ejecución, archivos montados como volúmenes.
 - Usa archivos `.env` solo para desarrollo y nunca los subas a git.
 - Documenta cómo inyectar los secretos en producción.
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- `Dockerfile:` Secreto hardcodeado
+
+  ```dockerfile
+    FROM node:20
+
+    # ENV para el secreto (variable de entorno)
+    ENV SECRET="mi-secreto-por-defecto"
+    ....
+
+  ```
+
+- Creación (mala práctica):
+
+  ```bash
+  docker build -f 5.secretos/Dockerfile -t app-secreto-malo app
+  ```
+
+- Ejecución **sin secreto** (muestra "undefined"):
+
+  ```bash
+  docker run --rm --init -p 3000:3000 app-secreto-malo
+  curl http://localhost:3000/secret
+  ```
+
+- Verificación del problema de seguridad:
+
+  ```bash
+  # Ver que el secreto está expuesto en la imagen mala
+  docker run --rm app-secreto-malo env | grep SECRET
+  ```
+
+</div>
+<div class=small>
+
+- `Dockerfile.1:` Sin secretos hardcodeados
+
+  ```dockerfile
+  FROM node:20
+  # ENV SECRET="mi-secreto-por-defecto"
+  ...
+  ```
+
+- Creación (buena práctica):
+
+  ```bash
+  docker build -f 5.secretos/Dockerfile.1 -t app-secreto-bueno app
+  ```
+
+- Ejecución con **variable de entorno**:
+
+  ```bash
+  docker run --rm --init -p 3000:3000 -e SECRET="mi-secreto-desde-env" app-secreto-bueno
+  curl http://localhost:3000/secret
+  ```
+
+- Ejecución con **archivo montado**:
+
+  ```bash
+  docker run --rm --init -p 3000:3000 -v "$(pwd)/5.secretos/my_secret.txt:/run/secrets/secret.txt" app-secreto-bueno
+  curl http://localhost:3000/secret
+  ```
+
+- Verificación del problema de seguridad:
+
+  ```bash
+  # Ver que no hay secreto hardcodeado en la imagen buena
+  docker run --rm app-secreto-bueno env | grep SECRET
+  ```
+
+  </div>
+  </div>
