@@ -144,11 +144,16 @@ Optimizar progresivamente el Dockerfile del backend NestJS aplicando cada una de
 
 Analiza el `Dockerfile` sin optimizar ubicado en `backend/Dockerfile`.
 
-**Comando para construir:**
+- **Comando para construir:**
 
-```bash
-docker build -f backend/Dockerfile -t backend-base backend
-```
+  ```bash
+  docker build -f backend/Dockerfile -t backend-base backend
+  ```
+
+- Servicio funciona
+  ```bash
+  curl http://localhost:3000/api/healthcheck
+  ```
 
 ---
 
@@ -219,7 +224,8 @@ Crea `Dockerfile.variables` que gestione correctamente las variables:
 - Verificación
 
   ```bash
-  docker run -rm --init backend-variables env
+  docker run --rm --init backend-variables env
+  docker run --rm --init -p 3000:8000 -e PORT=8000 backend-variables
   ```
 
 ---
@@ -242,7 +248,7 @@ Crea `Dockerfile.secure` que elimine todos los secretos hardcodeados:
 - Verificación
 
   ```bash
-  docker run -rm --init backend-secure env
+  docker run --rm --init backend-secure env
   ```
 
 ---
@@ -262,5 +268,5 @@ Crea `Dockerfile.no-root` que utilize un usuario no root.
 - Verificación
 
   ```bash
-  docker run -rm --init backend-no-root whoami
+  docker run --rm --init backend-no-root whoami
   ```
