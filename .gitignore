@@ -1,0 +1,19 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Logs
+*.log
+
+# Coverage
+coverage/
+
+# Entornos
+.env
+.env.*
+
+# Otros temporales
+.DS_Store

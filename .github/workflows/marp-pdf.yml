@@ -1,0 +1,41 @@
+name: Publicar PDF de slides en GitHub Pages
+
+on:
+  push:
+    paths:
+      - "**/*.md"
+      - ".github/workflows/marp-pdf.yml"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar Marp CLI
+        run: npm install -g @marp-team/marp-cli
+      - name: Exportar slides Marp a PDF
+        run: |
+          for file in $(find . -type f -name '*.md'); do
+            if grep -q '^[[:space:]]*marp:[[:space:]]*true' "$file"; then
+              pdf_file="${file%.md}.pdf"
+              echo "Converting $file to $pdf_file"
+              marp --pdf --allow-local-files -o "$pdf_file" "$file"
+            fi
+          done
+      - name: Commit y push de los PDFs generados
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add '*.pdf'
+          if git diff --cached --quiet; then
+            echo "No hay cambios en los PDFs."
+          else
+            git commit -m "chore: generar PDFs Marp automáticamente [skip ci]"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          fi
