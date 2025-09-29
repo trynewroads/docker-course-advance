@@ -21,7 +21,7 @@ ENV DB_NAME=todo_db
 COPY . .
 
 # Instalar dependencias
-RUN npm install
+RUN npm ci
 
 # Compilar TypeScript genera carpeta dist
 RUN npm run build

@@ -167,20 +167,20 @@ Crea `Dockerfile.multistage` que implemente multi-stage builds:
 - Construcción
 
   ```bash
-  docker build -f Dockerfile.multistage -t backend-multi backend
+  docker build -f Dockerfile.multistage -t backend-multistage backend
   ```
 
 - Verificación
 
   ```bash
-  docker image ls backend*
+  docker images --filter reference="backend*"
   ```
 
 ---
 
 ### 1.3 Optimización de Capas
 
-Crea `Dockerfile.optimizado` mejorando el anterior:
+Crea `Dockerfile.optimized` mejorando el anterior:
 
 - Agrupa comandos RUN relacionados
 - Limpia archivos temporales en la misma capa
@@ -191,7 +191,7 @@ Crea `Dockerfile.optimizado` mejorando el anterior:
 - Construcción
 
   ```bash
-  docker build -f Dockerfile.multistage -t backend-optimizado backend
+  docker build -f Dockerfile.optimized -t backend-optimized backend
   ```
 
 - Verificación
@@ -226,7 +226,7 @@ Crea `Dockerfile.variables` que gestione correctamente las variables:
 
 ### 1.5 Gestión Segura de Secretos
 
-Crea `Dockerfile.seguro` que elimine todos los secretos hardcodeados:
+Crea `Dockerfile.secure` que elimine todos los secretos hardcodeados:
 
 - Variables sensibles se pasan solo en runtime (`-e`)
 - Opción para leer secretos desde archivos montados
@@ -236,13 +236,13 @@ Crea `Dockerfile.seguro` que elimine todos los secretos hardcodeados:
 - Construcción
 
   ```bash
-  docker build -f Dockerfile.seguro -t backend-seguro backend
+  docker build -f Dockerfile.secure -t backend-secure backend
   ```
 
 - Verificación
 
   ```bash
-  docker run -rm --init backend-seguro env
+  docker run -rm --init backend-secure env
   ```
 
 ---

@@ -10,7 +10,7 @@ ENV NODE_ENV=development
 COPY . .
 
 # Instalar dependencias
-RUN npm install
+RUN npm ci
 
 # Compilar TypeScript genera carpeta dist
 RUN npm run build
@@ -41,6 +41,12 @@ RUN npm run test
 FROM node:20-alpine AS production
 WORKDIR /app
 
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package*.json ./
+
+RUN npm ci --only=production
+RUN npm cache clean --force
+
 # Variables de entorno para producción
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -55,11 +61,6 @@ ENV DB_PORT=5432
 ENV DB_USER=todo_user
 ENV DB_PASS=todo_pass
 ENV DB_NAME=todo_db
-
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package.json .
-
-RUN npm install --omit=dev
 
 # Exponer puerto
 EXPOSE $PORT
