@@ -115,6 +115,16 @@ style: |
   .small {
     font-size: 16px;
   }
+
+  .image-container{
+      
+  }
+
+  .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 ---
 
   <!-- _paginate: skip -->
@@ -178,6 +188,14 @@ Para lograrlo, es importante aplicar varias técnicas y buenas prácticas, como 
 - Multi-stage builds para separar dependencias de build y producción
 - Minimizar el número de capas combinando instrucciones RUN, COPY, etc.
 - Eliminar archivos temporales y cachés en la misma instrucción
+
+---
+
+<div class=image-container>
+
+<img src="./../../img/node_height.png" alt="Images Height">
+
+<div>
 
 ---
 
