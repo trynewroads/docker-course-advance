@@ -610,3 +610,176 @@ En Docker, los secretos no deben almacenarse en la imagen. Deben gestionarse de 
 
   </div>
   </div>
+
+---
+
+## Seguridad en Docker: Usuarios no-root
+
+Ejecutar contenedores como usuario **root** es una práctica insegura que puede comprometer la seguridad del sistema host. Por defecto, los procesos dentro de un contenedor se ejecutan como root, lo que representa un riesgo significativo.
+
+**¿Por qué es peligroso?**
+
+- Si un atacante compromete el contenedor, tiene privilegios de administrador.
+- Puede acceder y modificar archivos del sistema host si hay volumenes mal configurados.
+- Facilita la escalada de privilegios y ataques de escape de contenedor.
+
+---
+
+## Buenas prácticas de seguridad
+
+- **Crear un usuario específico** para ejecutar la aplicación.
+- **Usar UIDs numéricos** en lugar de nombres para mayor compatibilidad.
+- **Cambiar la propiedad de archivos** al usuario de la aplicación.
+- **Usar imágenes base que ya incluyan usuarios no-root** cuando sea posible.
+- **Verificar permisos** de archivos y directorios necesarios.
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `Dockerfile:` Aplicación ejecutándose como root (inseguro)
+
+  ```dockerfile
+  FROM node:20-alpine
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm install --only=production
+  COPY app.js .
+  EXPOSE 3000
+  CMD ["node", "app.js"]
+  ```
+
+- Creación y verificación:
+
+  ```bash
+  docker build -f 6.seguridad/Dockerfile -t app-inseguro app
+  docker run --rm app-inseguro whoami
+  docker run --rm app-inseguro id
+  ```
+
+- Resultado:
+
+  ```bash
+  $docker run --rm --init app-seguridad-root whoami
+  root
+  ```
+
+</div>
+
+<div class="small">
+
+- `Dockerfile.1:` Aplicación con usuario no-root (seguro)
+
+  ```dockerfile
+  FROM node:20-alpine
+  WORKDIR /app
+  # Crear usuario y grupo no-root
+  RUN addgroup -g 1001 -S nodejs && \
+      adduser -S nodeuser -u 1001 -G nodejs
+  # Instalar dependencias como root
+  COPY package*.json ./
+  RUN npm install --only=production && \
+      npm cache clean --force
+  # Copiar código y cambiar propiedad
+  COPY app.js .
+  RUN chown -R nodeuser:nodejs /app
+  # Cambiar a usuario no-root
+  USER nodeuser
+  EXPOSE 3000
+  CMD ["node", "app.js"]
+  ```
+
+- Creación y verificación:
+
+  ```bash
+  $docker build -f 6.seguridad/Dockerfile.1 -t app-seguro app
+  docker run --rm app-seguro whoami
+  docker run --rm app-seguro id
+  ```
+
+- Resultado:
+
+  ```bash
+  $docker run --rm --init app-seguridad-no-root whoami
+  nodeuser
+  ```
+
+</div>
+</div>
+
+---
+
+## Multi-stage optimizado con seguridad
+
+<div class=container-column>
+<div class=small>
+
+- `Dockerfile.2` Aplicación multistage
+
+  ```dockerfile
+  FROM node:20 AS build
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm install --only=production && npm cache clean --force
+
+  FROM node:20 AS test
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm ci
+  COPY . .
+  RUN npm test
+
+  FROM node:20-alpine AS production
+  WORKDIR /app
+
+  # Crear usuario no-root
+  RUN addgroup -g 1001 -S nodejs && \
+      adduser -S nodeuser -u 1001 -G nodejs
+
+  # Copiar solo archivos necesarios y cambiar propiedad
+  COPY --from=build --chown=nodeuser:nodejs /app/node_modules ./node_modules
+  COPY --from=build --chown=nodeuser:nodejs /app/package.json ./
+  COPY --chown=nodeuser:nodejs app.js .
+
+  # Cambiar a usuario no-root
+  USER nodeuser
+
+  EXPOSE 3000
+  CMD ["node", "app.js"]
+  ```
+
+</div>
+
+<div class=small>
+
+- Verificación
+
+  ```bash
+  docker run --rm app-seguro whoami
+  docker run --rm app-seguro id
+  ```
+
+  ```bash
+  docker run --rm app-seguro ls -la /app
+  ```
+
+- Resultado
+
+  ```
+  $docker run --rm --init app-seguridad-multi-no-root whoami
+  nodeuser
+  ```
+
+  ```bash
+  $docker run --rm --init app-seguridad-multi-no-root ls -la /app
+  total 20
+  drwxr-xr-x    1 root     root          4096 Sep 29 09:02 .
+  drwxr-xr-x    1 root     root          4096 Sep 29 09:03 ..
+  -rw-rw-r--    1 nodeuser nodejs        1466 Sep 29 08:05 app.js
+  drwxr-xr-x   86 nodeuser nodejs        4096 Sep 29 09:02 node_modules
+  -rw-rw-r--    1 nodeuser nodejs         395 Sep 29 08:05 package.json
+  ```
+
+</div>
+</div>
