@@ -1,0 +1,19 @@
+# Dockerfile Fase 3: Capas optimizadas y bien organizadas
+FROM node:20
+WORKDIR /app
+
+# Instalar dependencias del sistema primero (se cachea)
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copiar solo package.json primero (mejor cache)
+COPY package*.json ./
+RUN npm install
+
+# Copiar código fuente al final
+COPY . .
+RUN npm test
+
+CMD ["node", "app.js"]

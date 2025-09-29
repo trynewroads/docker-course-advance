@@ -1,0 +1,29 @@
+# Dockerfile sin optimizar para Angular Frontend
+FROM node:22 AS build
+
+WORKDIR /app
+
+# Copiar todo el proyecto
+COPY . .
+
+# Instalar dependencias
+RUN npm install
+
+# Compilar aplicación Angular
+RUN npm run build
+
+FROM nginx:1.29 AS production
+
+ENV BACKEND_HOST=backend
+ENV BACKEND_PORT=3000
+
+# Copiar archivos compilados a nginx
+COPY --from=build /app/dist/course-frontend/browser /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+
+
+# Exponer puerto
+EXPOSE 80
+
+# Comando para ejecutar nginx
+CMD ["nginx", "-g", "daemon off;"]
