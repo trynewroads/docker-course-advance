@@ -1,0 +1,19 @@
+{
+  "testEnvironment": "node",
+  "transform": {},
+  "extensionsToTreatAsEsm": [],
+  "globals": {
+    "NODE_ENV": "test"
+  },
+  "collectCoverageFrom": [
+    "src/**/*.js",
+    "!src/app.js"
+  ],
+  "coverageDirectory": "coverage",
+  "testMatch": [
+    "**/tests/**/*.test.js"
+  ],
+  "verbose": true,
+  "forceExit": true,
+  "detectOpenHandles": true
+}
