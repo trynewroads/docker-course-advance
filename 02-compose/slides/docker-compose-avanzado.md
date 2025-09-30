@@ -174,30 +174,30 @@ En archivos YAML, como los usados por Docker Compose, los anchors (`&`) y alias 
 
 ```yaml
 services:
-  custom:
-    image: app-seguridad-multi-no-root
+  base-1:
+    image: app-base
     ports:
       - "3000:3000"
     environment: &env
       - PORT=3000
       - LOG_LEVEL=debug
 
-  replica-custom:
-    image: app-seguridad-multi-no-root
+  base-2:
+    image: app-base
     ports:
       - "4000:3000"
     environment: *env
 
-  custom-list:
-    image: app-seguridad-multi-no-root
+  base-3:
+    image: app-base
     ports:
       - "5000:3000"
     environment: &env-list
       PORT: 3000
       LOG_LEVEL: debug
 
-  replica-custom-list:
-    image: app-custom
+  base-4:
+    image: app-base
     ports:
       - "6000:3000"
     environment:
