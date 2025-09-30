@@ -23,8 +23,8 @@ const envSchema = z.object({
   DB_PASS: z.string().optional(),
   SECRET: z
     .string()
-    .min(32)
-    .default('dev-secret-key-at-least-32-chars-long')
+    .min(12)
+    .default('dev-secret-key-at-least-12-chars-long')
 });
 
 try {
