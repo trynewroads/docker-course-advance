@@ -170,40 +170,76 @@ En archivos YAML, como los usados por Docker Compose, los anchors (`&`) y alias 
 ---
 
 <div class="container-column">
-<div class=small>
+<div class="small">
 
 ```yaml
 services:
   base-1:
     image: app-base
+    container_name: base-1
     ports:
-      - "3000:3000"
+      - "3000:5000"
     environment: &env
-      - PORT=3000
+      - PORT=5000
       - LOG_LEVEL=debug
 
   base-2:
     image: app-base
+    container_name: base-2
     ports:
-      - "4000:3000"
+      - "4000:5000"
     environment: *env
 
   base-3:
     image: app-base
+    container_name: base-3
     ports:
-      - "5000:3000"
+      - "5000:8000"
     environment: &env-list
-      PORT: 3000
-      LOG_LEVEL: debug
+      PORT: 8000
+      LOG_LEVEL: warn
 
   base-4:
     image: app-base
+    container_name: base-4
     ports:
-      - "6000:3000"
+      - "6000:8000"
     environment:
       <<: *env-list
       LOG_LEVEL: info
 ```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```
+  docker compose -f 1.anchor/docker-compose.yaml up
+  ```
+
+- Verificación
+
+  ```
+  docker exec base-1
+  docker exec base-2
+  docker exec base-3
+  docker exec base-4
+  ```
+
+- Resultado
+
+  ```
+  LOG_LEVEL=debug
+  PORT=5000
+  ```
+
+- Limpieza
+
+  ```
+  docker compose -f 1.anchor/docker-compose.yaml down
+  ```
 
 </div>
 
@@ -233,6 +269,106 @@ En ambos casos, se dispone de varias opciones de configuración:
 Es posible emplear `depends_on` junto con la condición `service_healthy` para garantizar que un servicio espere a que otro esté en estado saludable antes de iniciar su ejecución.
 
 > El servicio dependiente será creado y su contenedor iniciado, pero no comenzará su proceso principal hasta que el servicio del que depende alcance el estado saludable (`healthy`).
+
+---
+
+<div class="container-column">
+<div class="small">
+
+```yaml
+services:
+  base-health:
+    container_name: base-health
+    image: app-base
+    environment: &env-base
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    ports:
+      - "3000:3000"
+
+  base-no-health:
+    container_name: base-no-health
+    image: app-base
+    ports:
+      - "4000:3000"
+    environment:
+      <<: *env-base
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  base-health-conditional:
+    container_name: base-health-conditional
+    image: app-base
+    depends_on:
+      base-no-health:
+        condition: service_healthy
+
+  base-conditional:
+    container_name: base-conditional
+    image: app-base
+    depends_on:
+      - base-no-health
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment: &db-env
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```
+  docker compose -f 2.healthcheck/docker-compose.yaml up -d
+  ```
+
+- Verificación
+
+  ```
+  docker compose -f 2.healthcheck/docker-compose.yaml ps -a
+  ```
+
+- Resultado
+
+  ```
+  docker compose -f 02-compose/ejemplos/2.healthcheck/docker-compose.yaml ps -a
+  NAME                      IMAGE         COMMAND                  SERVICE                   CREATED          STATUS                      PORTS
+  base-conditional          app-base      "docker-entrypoint.s…"   base-conditional          40 seconds ago   Up 18 seconds (healthy)     3000/tcp
+  base-health               app-base      "docker-entrypoint.s…"   base-health               40 seconds ago   Exited (1) 39 seconds ago
+  base-health-conditional   app-base      "docker-entrypoint.s…"   base-health-conditional   40 seconds ago   Created
+  base-no-health            app-base      "docker-entrypoint.s…"   base-no-health            40 seconds ago   Up 19 seconds (unhealthy)   0.0.0.0:4000->3000/tcp, [::]:4000->3000/tcp
+  postgres                  postgres:15   "docker-entrypoint.s…"   postgres                  40 seconds ago   Up 39 seconds (healthy)     5432/tcp
+
+  ```
+
+- Limpieza
+
+  ```
+  docker compose -f 2.healthcheck/docker-compose.yaml down
+  ```
+
+</div>
+
+</div>
 
 ---
 
