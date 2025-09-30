@@ -1,45 +1,59 @@
 const express = require('express');
-const dbPool = require('../db/pool');
+const userService = require('../services/users');
 const logger = require('../config/logger');
 
 const router = express.Router();
 
-router.post('/', createUser);
-router.get('/', getUsers);
 
-async function createUser(req, res) {
-  const { name, email } = req.body;
-  if (!name || !email) {
-    return res
-      .status(400)
-      .json({ error: 'Faltan campos requeridos: name y email' });
-  }
+router.post('/', async (req, res) => {
   try {
-    const result = await dbPool.query(
-      'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
-      [name, email]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    logger.error('Error insertando usuario: ' + err.message);
-    if (err.code === '23505') {
-      res.status(409).json({ error: 'El email ya existe' });
-    } else {
-      res.status(500).json({ error: 'Error interno del servidor' });
+    const { name, email } = req.body;
+    const user = await userService.createUser(name, email);
+    
+    res.status(201).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    logger.error('Error creando usuario:', error.message);
+    
+    if (error.code === 'MISSING_FIELDS') {
+      return res.status(400).json({
+        success: false,
+        error: error.message
+      });
     }
+    
+    if (error.code === 'DUPLICATE_EMAIL') {
+      return res.status(409).json({
+        success: false,
+        error: error.message
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor'
+    });
   }
-}
+});
 
-async function getUsers(req, res) {
+
+router.get('/', async (req, res) => {
   try {
-    const result = await dbPool.query(
-      'SELECT id, name, email FROM users ORDER BY id'
-    );
-    res.json(result.rows);
-  } catch (err) {
-    logger.error('Error listando usuarios: ' + err.message);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    const users = await userService.getAllUsers();
+    res.json({
+      success: true,
+      count: users.length,
+      data: users
+    });
+  } catch (error) {
+    logger.error('Error obteniendo usuarios:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor'
+    });
   }
-}
+});
 
 module.exports = { router };
