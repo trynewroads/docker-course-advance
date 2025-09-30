@@ -1,0 +1,19 @@
+# Archivos a ignorar por Prettier
+node_modules/
+dist/
+build/
+coverage/
+logs/
+uploads/
+*.log
+.env
+.env.*
+!.env.example
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Archivos de configuración específicos
+package-lock.json
+yarn.lock

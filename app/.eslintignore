@@ -1,0 +1,17 @@
+# Archivos a ignorar por ESLint
+node_modules/
+dist/
+build/
+coverage/
+logs/
+uploads/
+*.log
+
+# Archivos de configuración
+.eslintrc.js
+.prettierrc.js
+jest.config.js
+
+# Archivos temporales
+*.tmp
+*.temp
