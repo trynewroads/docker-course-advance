@@ -2,7 +2,12 @@ const fs = require('fs');
 const logger = require('../config/logger');
 
 function getSecret() {
-  // 1. Intentar leer desde archivo montado
+  readFileSecret();
+  readEnvSecret()
+  return undefined;
+}
+
+function readFileSecret(){
   const secretFile = '/run/secrets/secret.txt';
   if (fs.existsSync(secretFile)) {
     try {
@@ -11,12 +16,12 @@ function getSecret() {
       logger.error('Error leyendo archivo de secreto: ' + err.message);
     }
   }
-  // 2. Usar variable de entorno como fallback
+}
+
+function readEnvSecret() {
   if (process.env.SECRET) {
     return process.env.SECRET;
   }
-  // 3. Si no hay nada, devolver undefined
-  return undefined;
 }
 
 module.exports = getSecret;

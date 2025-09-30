@@ -4,8 +4,10 @@ const logger = require('../config/logger');
 
 const router = express.Router();
 
-// Endpoint para crear un usuario
-router.post('/', async (req, res) => {
+router.post('/', createUser);
+router.get('/', getUsers);
+
+async function createUser(req, res) {
   const { name, email } = req.body;
   if (!name || !email) {
     return res.status(400).json({ error: 'Faltan campos requeridos: name y email' });
@@ -24,10 +26,9 @@ router.post('/', async (req, res) => {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   }
-});
+}
 
-// Endpoint para listar usuarios
-router.get('/', async (req, res) => {
+async function getUsers(req, res) {
   try {
     const result = await dbPool.query('SELECT id, name, email FROM users ORDER BY id');
     res.json(result.rows);
@@ -35,6 +36,8 @@ router.get('/', async (req, res) => {
     logger.error('Error listando usuarios: ' + err.message);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-});
+}
+
+
 
 module.exports = { router };

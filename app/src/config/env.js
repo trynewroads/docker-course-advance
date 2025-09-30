@@ -1,0 +1,48 @@
+const { z } = require('zod');
+const logger = require('./logger');
+
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    require('dotenv').config();
+  } catch (error) {
+    logger.warn('No se pudo cargar .env:', error.message);
+  }
+}
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PORT: z.coerce.number().min(1).max(65535).default(3000),
+  DEBUG_REQUEST: z.coerce.boolean().default(false),
+  ENABLE_AUTH: z.coerce.boolean().default(true),
+  
+  USE_DB: z.coerce.boolean().default(false),
+  DB_HOST: z.string().default('localhost'),
+  DB_PORT: z.coerce.number().default(5432),
+  DB_NAME: z.string().optional(),
+  DB_USER: z.string().optional(),
+  DB_PASS: z.string().optional(),
+  
+  JWT_SECRET: z.string().min(32).default('dev-secret-key-at-least-32-chars-long'),
+  DEFAULT_USER: z.string().default('admin'),
+  DEFAULT_PASS: z.string().min(8).default('12345678')
+});
+
+try {
+  const env = envSchema.parse(process.env);
+  
+  if (env.USE_DB) {
+    if (!env.DB_NAME || !env.DB_USER || !env.DB_PASS) {
+      throw new Error('DB_NAME, DB_USER y DB_PASS son requeridas cuando USE_DB=true');
+    }
+  }
+  
+  if (env.NODE_ENV === 'production' && env.JWT_SECRET === 'dev-secret-key-at-least-32-chars-long') {
+    throw new Error('JWT_SECRET debe cambiarse en producción');
+  }
+  
+  module.exports = env;
+  
+} catch (error) {
+  logger.error('Error en configuración de entorno:', error.message);
+  process.exit(1);
+}
