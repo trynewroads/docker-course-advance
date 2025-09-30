@@ -14,22 +14,17 @@ const envSchema = z.object({
     .enum(['development', 'production', 'test'])
     .default('development'),
   PORT: z.coerce.number().min(1).max(65535).default(3000),
-  DEBUG_REQUEST: z.coerce.boolean().default(false),
-  ENABLE_AUTH: z.coerce.boolean().default(true),
-
+  DEBUG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('info'),
   USE_DB: z.coerce.boolean().default(false),
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
   DB_NAME: z.string().optional(),
   DB_USER: z.string().optional(),
   DB_PASS: z.string().optional(),
-
-  JWT_SECRET: z
+  SECRET: z
     .string()
     .min(32)
-    .default('dev-secret-key-at-least-32-chars-long'),
-  DEFAULT_USER: z.string().default('admin'),
-  DEFAULT_PASS: z.string().min(8).default('12345678')
+    .default('dev-secret-key-at-least-32-chars-long')
 });
 
 try {
