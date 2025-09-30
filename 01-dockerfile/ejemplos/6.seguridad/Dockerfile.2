@@ -1,9 +1,11 @@
 FROM node:20 AS build
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --only=production && npm cache clean --force
 
 FROM node:20 AS test
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -11,6 +13,7 @@ COPY . .
 RUN npm test
 
 FROM node:20-alpine AS production
+
 WORKDIR /app
 
 # Crear usuario no-root
@@ -20,7 +23,9 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copiar solo archivos necesarios y cambiar propiedad
 COPY --from=build --chown=nodeuser:nodejs /app/node_modules ./node_modules
 COPY --from=build --chown=nodeuser:nodejs /app/package.json ./
-COPY --chown=nodeuser:nodejs app.js .
+COPY --chown=nodeuser:nodejs src src
+
+RUN chown -R nodeuser:nodejs /app
 
 # Cambiar a usuario no-root
 USER nodeuser

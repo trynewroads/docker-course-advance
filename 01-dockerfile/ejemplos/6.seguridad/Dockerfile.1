@@ -11,7 +11,7 @@ RUN npm install --only=production && \
     npm cache clean --force
 
 # Copiar código y cambiar propiedad
-COPY app.js .
+COPY src src
 RUN chown -R nodeuser:nodejs /app
 
 # Cambiar a usuario no-root
