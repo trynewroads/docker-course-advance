@@ -26,7 +26,6 @@ function healthCheck(req, res) {
 
 function retrieveSecret(req, res) {
   res.json({ 
-    message: 'Este es el secreto',
     secret: SECRET,
     timestamp: new Date().toISOString()
   });
