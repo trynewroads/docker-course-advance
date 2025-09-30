@@ -9,13 +9,15 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
+
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
   PORT: z.coerce.number().min(1).max(65535).default(3000),
   DEBUG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('info'),
-  USE_DB: z.coerce.boolean().default(false),
+  USE_DB: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()).default(false),
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
   DB_NAME: z.string().optional(),
@@ -29,7 +31,6 @@ const envSchema = z.object({
 
 try {
   const env = envSchema.parse(process.env);
-
   if (env.USE_DB) {
     if (!env.DB_NAME || !env.DB_USER || !env.DB_PASS) {
       throw new Error(
@@ -40,7 +41,7 @@ try {
   
   module.exports = env;
 } catch (error) {
-  logger.error('Error en configuración de entorno:', error.message);
+  logger.error('Error en configuración de entorno:', error);
   // eslint-disable-next-line no-process-exit
   process.exit(1);
 }
