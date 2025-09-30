@@ -3,11 +3,11 @@ const logger = require('../config/logger');
 
 function getSecret() {
   readFileSecret();
-  readEnvSecret()
+  readEnvSecret();
   return undefined;
 }
 
-function readFileSecret(){
+function readFileSecret() {
   const secretFile = '/run/secrets/secret.txt';
   if (fs.existsSync(secretFile)) {
     try {

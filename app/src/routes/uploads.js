@@ -7,7 +7,6 @@ const logger = require('../config/logger');
 const router = express.Router();
 const uploadsDir = path.join(__dirname, '../uploads');
 
-
 router.post('/', upload.single('file'), uploadFile);
 router.get('/:filename', getFile);
 
@@ -24,10 +23,12 @@ function uploadFile(req, res) {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  logger.info(`File uploaded: ${req.file.originalname} -> ${req.file.filename}`);
-  res.status(201).json({ filename: req.file.filename, originalname: req.file.originalname }); 
-
+  logger.info(
+    `File uploaded: ${req.file.originalname} -> ${req.file.filename}`
+  );
+  res
+    .status(201)
+    .json({ filename: req.file.filename, originalname: req.file.originalname });
 }
-
 
 module.exports = router;

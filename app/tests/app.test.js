@@ -1,8 +1,8 @@
 const request = require('supertest');
-const express = require('express');
+
 
 // Importa la app o crea una instancia para test
-const app = require('../app');
+const app = require('../src/app');
 
 describe('App Express', () => {
   it('GET / debe responder con saludo', async () => {
@@ -15,5 +15,4 @@ describe('App Express', () => {
     const res = await request(app).get('/secret');
     expect(res.statusCode).toBe(200);
   });
-
 });

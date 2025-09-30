@@ -12,7 +12,6 @@ ensureDirs();
 
 app.use(express.json());
 
-
 app.use('/users', usersRouter);
 app.use('/upload', uploadRoutes);
 app.use('/', miscRoutes);
@@ -24,6 +23,5 @@ if (require.main === module) {
     });
   });
 }
-
 
 module.exports = app;
