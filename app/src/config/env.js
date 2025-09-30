@@ -37,14 +37,7 @@ try {
       );
     }
   }
-
-  if (
-    env.NODE_ENV === 'production' &&
-    env.JWT_SECRET === 'dev-secret-key-at-least-32-chars-long'
-  ) {
-    throw new Error('JWT_SECRET debe cambiarse en producción');
-  }
-
+  
   module.exports = env;
 } catch (error) {
   logger.error('Error en configuración de entorno:', error.message);
