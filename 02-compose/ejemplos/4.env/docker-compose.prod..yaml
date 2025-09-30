@@ -1,0 +1,12 @@
+services:
+  app:
+    container_name: app-service
+    image: app-custom:latest
+    environment:
+      - LOG_LEVEL=info
+      - PORT=3001
+      - DB_HOST=localhost
+      - DB_PORT=5432
+      - DB_USER=usuario_seguro
+      - DB_PASSWORD=contraseña_segura
+      - DB_NAME=app_db

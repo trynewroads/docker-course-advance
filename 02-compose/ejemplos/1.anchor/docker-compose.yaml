@@ -1,0 +1,30 @@
+services:
+  custom:
+    image: app-custom
+    ports:
+      - "3000:3000"
+    environment: &env
+      - PORT=3000
+      - LOG_LEVEL=debug
+
+  replica-custom:
+    image: app-custom
+    ports:
+      - "4000:3000"
+    environment: *env
+
+  custom-list:
+    image: app-custom
+    ports:
+      - "5000:3000"
+    environment: &env-list
+      PORT: 3000
+      LOG_LEVEL: debug
+
+  replica-custom-list:
+    image: app-custom
+    ports:
+      - "6000:3000"
+    environment:
+      <<: *env-list
+      LOG_LEVEL: info
