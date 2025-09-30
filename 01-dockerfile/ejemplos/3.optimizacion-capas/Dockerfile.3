@@ -1,5 +1,6 @@
 # Dockerfile Fase 3: Capas optimizadas y bien organizadas
 FROM node:20
+
 WORKDIR /app
 
 # Instalar dependencias del sistema primero (se cachea)
@@ -16,4 +17,4 @@ RUN npm install
 COPY . .
 RUN npm test
 
-CMD ["node", "app.js"]
+CMD ["node", "src/app.js"]

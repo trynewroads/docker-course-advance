@@ -237,7 +237,7 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
     RUN npm install
     COPY . .
     RUN npm test
-    CMD ["node", "app.js"]
+    CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -276,7 +276,7 @@ Permite crear imágenes más ligeras y seguras usando varias etapas en el Docker
     COPY --from=build /app/app.js .
     COPY --from=build /app/package.json .
     RUN npm install --production
-    CMD ["node", "app.js"]
+    CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -348,7 +348,7 @@ Algunas estrategias recomendadas son:
   RUN apt-get install -y build-essential
   RUN npm install
   RUN npm test
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -370,7 +370,7 @@ Algunas estrategias recomendadas son:
       apt-get install -y build-essential && \
       npm install
   RUN npm test
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -399,7 +399,7 @@ Algunas estrategias recomendadas son:
       apt-get clean && \
       rm -rf /var/lib/apt/lists/*
   RUN npm test
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -432,7 +432,7 @@ Algunas estrategias recomendadas son:
   COPY . .
   RUN npm test
 
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación:
@@ -472,7 +472,9 @@ Estas variables ayudan a crear imágenes más flexibles, reutilizables y adaptab
 - `Dockerfile:` Uso de ARG para PORT y ENV para SECRET
 
   ```dockerfile
-  FROM node:20
+  ARG NODE=20
+
+  FROM node:$NODE
 
   # ARG para el puerto (se puede pasar en build time)
   ARG PORT=3000
@@ -492,7 +494,7 @@ Estas variables ayudan a crear imágenes más flexibles, reutilizables y adaptab
   # Exponer el puerto
   EXPOSE $PORT
 
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación con valores por defecto:
@@ -670,7 +672,7 @@ Ejecutar contenedores como usuario **root** es una práctica insegura que puede 
   RUN npm install --only=production
   COPY app.js .
   EXPOSE 3000
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación y verificación:
@@ -710,7 +712,7 @@ Ejecutar contenedores como usuario **root** es una práctica insegura que puede 
   # Cambiar a usuario no-root
   USER nodeuser
   EXPOSE 3000
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 - Creación y verificación:
@@ -769,7 +771,7 @@ Ejecutar contenedores como usuario **root** es una práctica insegura que puede 
   USER nodeuser
 
   EXPOSE 3000
-  CMD ["node", "app.js"]
+  CMD ["node", "src/app.js"]
   ```
 
 </div>
