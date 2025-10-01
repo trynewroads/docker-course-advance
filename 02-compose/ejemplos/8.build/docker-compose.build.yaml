@@ -3,10 +3,12 @@ services:
     build:
       context: ./../../../app
       dockerfile: ../02-compose/ejemplos/Dockerfile
+      args:
+        NODE: 20
+      target: build
+      no_cache: true
+      tags:
+        - "app-base:1"
+        - "app-base:latest"
     ports:
       - "3000:3000"
-
-networks:
-  default:
-    driver: bridge
-    name: app-base

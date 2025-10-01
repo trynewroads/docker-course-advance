@@ -945,3 +945,129 @@ docker compose -f 02-compose/ejemplos/7.include/docker-compose.dev.yaml down
 
 </div>
 </div>
+
+---
+
+## Compose Specifications
+
+---
+
+## Build Specification
+
+La especificación Build define configuraciones avanzadas para construir imágenes Docker desde código fuente, incluyendo argumentos, targets multi-stage, cache, y builds multi-plataforma.
+
+---
+
+```yaml
+services:
+  base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+      args:
+        NODE: 20
+      target: build
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      tags:
+        - "app-base:1"
+        - "app-base:latest"
+    ports:
+      - "3000:3000"
+```
+
+---
+
+## Deploy Specification
+
+La especificación Deploy define configuraciones para despliegue en entornos de producción, especialmente útil para Docker Swarm, incluyendo réplicas, recursos, actualizaciones y políticas de reinicio.
+
+---
+
+```yaml
+services:
+  base:
+    image: app-base:1
+    deploy:
+      mode: replicated
+      replicas: 2
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.5"
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+```
+
+---
+
+## Develop Specification
+
+La especificación Develop define configuraciones específicas para desarrollo local, incluyendo hot reload, file watching, debugging, y sincronización de archivos en tiempo real.
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- `docker-compose.develop.yaml`
+
+```yaml
+services:
+  base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+      target: test
+    environment:
+      - USE_DB=false
+    ports:
+      - "3000:3000"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../../../app/src
+          target: /app/src
+          ignore:
+            - node_modules/
+            - "**/*.test.js"
+        - action: rebuild
+          path: ./../../../app/package.json
+    volumes:
+      - node_modules:/app/node_modules
+    command: ["npm", "start"]
+
+volumes:
+  node_modules:
+```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+```
+docker compose -f 02-compose/ejemplos/8.build/docker-compose.develop.yaml watch
+```
+
+- Verificación
+
+  - Modificar el código hará que reinicie el servidor
+  - Modificar el package.json hará un nuevo `build`
+
+- Limpiar
+
+```
+docker compose -f 02-compose/ejemplos/8.build/docker-compose.develop.yaml down
+```
+
+</div>
+
+</div>

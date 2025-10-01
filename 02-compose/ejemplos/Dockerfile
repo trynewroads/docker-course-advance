@@ -11,6 +11,7 @@ COPY package*.json ./
 RUN npm ci && \
     npm cache clean --force
 
+
 # Stage 2: Testing
 FROM node:$NODE AS test
 

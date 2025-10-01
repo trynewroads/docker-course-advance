@@ -1,0 +1,26 @@
+services:
+  base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+      target: test
+    environment:
+      - USE_DB=false
+    ports:
+      - "3000:3000"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../../../app/src
+          target: /app/src
+          ignore:
+            - node_modules/
+            - "**/*.test.js"
+        - action: rebuild
+          path: ./../../../app/package.json
+    volumes:
+      - node_modules:/app/node_modules
+    command: ["npm", "start"]
+
+volumes:
+  node_modules:
