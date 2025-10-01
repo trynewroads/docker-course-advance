@@ -110,7 +110,7 @@ style: |
   .container-column  {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: .5rem;
   }
 
   .small {
@@ -485,13 +485,101 @@ services:
 
 ---
 
+## Multiple Ficheros `.env`
+
+Docker Compose permite trabajar con múltiples archivos de variables de entorno para gestionar configuraciones específicas por entorno. Esto facilita la separación de configuraciones sensibles y la personalización según el contexto de ejecución.
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- Fichero `.env`
+
+  ```bash
+  TAG=latest
+  INTERNAL_PORT=3000
+  EXTERNAL_PORT=3000
+  ```
+
+- Fichero `.env.dev`
+
+  ```bash
+  SECRET=development-secret
+  DEBUG=info
+  ```
+
+- Fichero `.env.prod`
+
+  ```bash
+  SECRET=production-secret
+  DEBUG=warn
+  ```
+
+- Fichero `compose.yaml`
+
+  ```yaml
+  services:
+    base:
+      image: app-base:${TAG}
+      container_name: app-base
+      ports:
+        - ${EXTERNAL_PORT}:${INTERNAL_PORT}
+  ```
+
+</div>
+<div class=small>
+
+- Fichero `compose.dev.yaml`
+
+  ````yaml
+  services:
+    base:
+      image: app-base:${TAG}
+      container_name: app-base
+      ports:
+        - ${EXTERNAL_PORT}:${INTERNAL_PORT}
+      env_file:
+        - .env.dev
+  ```
+
+  ````
+
+- Fichero `compose.prod.yaml`
+
+  ```yaml
+  services:
+    base:
+      image: app-base:${TAG}
+      container_name: app-base
+      ports:
+        - ${EXTERNAL_PORT}:${INTERNAL_PORT}
+      env_file:
+        - .env.prod
+  ```
+
+- Ejecución
+
+  ```bash
+  docker compose --env-file 02-compose/ejemplos/9.env/.env --env-file 02-compose/ejemplos/9.env/.env.dev -f 02-compose/ejemplos/9.env/docker-compose.yaml config
+  ```
+
+  ```bash
+  docker compose -f 02-compose/ejemplos/9.env/docker-compose.dev.yaml config
+  ```
+
+</div>
+</div>
+
+---
+
 ## Multiple Ficheros Compose
 
 Docker Compose permite trabajar con múltiples archivos para personalizar aplicaciones según diferentes entornos o flujos de trabajo. Esto es especialmente útil para aplicaciones grandes con múltiples equipos y configuraciones complejas.
 
 ---
 
-### Ventajas de múltiples archivos:
+### Ventajas:
 
 - **Modularidad**: Separación por equipos o funcionalidades
 - **Entornos**: Configuraciones específicas (dev, test, prod)
