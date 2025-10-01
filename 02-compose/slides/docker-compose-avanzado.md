@@ -132,6 +132,19 @@ style: |
     width: 100%;
     object-fit: contain;
   }
+
+
+  table, td, th, tr{
+    background: transparent!important;
+  }
+
+  th {
+   font-size: 26px;
+  }
+
+  td {
+    font-size: 20px;
+  }
 ---
 
   <!-- _paginate: skip -->
@@ -1071,3 +1084,13 @@ docker compose -f 02-compose/ejemplos/8.build/docker-compose.develop.yaml down
 </div>
 
 </div>
+
+---
+
+### Resumen
+
+| Specification | Fase         | Propósito Principal    | Comando Típico         | Entorno          |
+| ------------- | ------------ | ---------------------- | ---------------------- | ---------------- |
+| **Develop**   | Desarrollo   | Hot reload, debugging  | `docker compose watch` | Local            |
+| **Build**     | Construcción | Imágenes optimizadas   | `docker compose build` | CI/CD            |
+| **Deploy**    | Producción   | Orquestación escalable | `docker stack deploy`  | Swarm/Producción |
