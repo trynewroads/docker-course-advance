@@ -560,7 +560,7 @@ curl http://localhost:3000/secret
 - Limpiar
 
 ```bash
-docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.dev.yaml rm
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.dev.yaml down
 ```
 
 </div>
@@ -631,7 +631,159 @@ curl http://localhost:3000/secret
 - Limpiar
 
 ```bash
-docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.prod.yaml rm
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.prod.yaml down
+```
+
+</div>
+</div>
+
+---
+
+### Extensión de archivos
+
+Extends permite que un servicio herede configuración de otro servicio definido en un archivo diferente, seleccionando específicamente qué partes usar y permitiendo sobrescribir atributos según las necesidades.
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `common-services.yaml`
+
+```yaml
+services:
+  common-base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+    image: app-base
+    container_name: app-base
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+
+  common-postgres:
+    container_name: postgres
+    image: postgres:15
+    environment: &db-env
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+```
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/6.extends/docker-compose.dev.yaml up -d --build
+```
+
+</div>
+
+<div class="small">
+
+- `docker-compose.dev.yaml`
+
+```yaml
+services:
+  app-base:
+    extends:
+      file: common-services.yaml
+      service: common-base
+    environment:
+      SECRET: development-secret
+      DEBUG_LEVEL: debug
+      USE_DB: false
+```
+
+- Verificación
+
+```bash
+docker exec app-base env
+```
+
+```bash
+curl http://localhost:3000/secret
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/6.extends/docker-compose.dev.yaml down
+```
+
+</div>
+</div>
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `docker-compose.prod.yaml`
+
+```yaml
+services:
+  app-base:
+    extends:
+      file: common-services.yaml
+      service: common-base
+    volumes:
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+    environment:
+      SECRET: production-secret
+      DEBUG_LEVEL: warn
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    extends:
+      file: common-services.yaml
+      service: common-postgres
+
+volumes:
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+```
+
+</div>
+
+<div class="small">
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/6.extends/docker-compose.dev.yaml up -d --build
+```
+
+- Verificación
+
+```bash
+docker exec app-base env
+```
+
+```bash
+curl http://localhost:3000/secret
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/6.extends/docker-compose.dev.yaml down
 ```
 
 </div>
