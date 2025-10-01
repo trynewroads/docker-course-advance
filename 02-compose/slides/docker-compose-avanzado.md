@@ -110,7 +110,7 @@ style: |
   .container-column  {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 1rem;
   }
 
   .small {
@@ -151,7 +151,7 @@ Docker Compose es una herramienta esencial para definir y gestionar aplicaciones
 
 ---
 
-## Anchors en YAML
+## Fragments
 
 En archivos YAML, como los usados por Docker Compose, los anchors (`&`) y alias (`*`) permiten reutilizar bloques de configuración, evitando duplicidad y facilitando el mantenimiento.
 
@@ -239,6 +239,102 @@ services:
 
   ```
   docker compose -f 1.anchor/docker-compose.yaml down
+  ```
+
+</div>
+
+</div>
+
+---
+
+## Extensions
+
+Las extensiones (`x-`) permiten crear configuraciones modulares y reutilizables en Docker Compose. Son campos personalizados que Compose ignora, pero que puedes usar con anchors y aliases para hacer tus archivos más eficientes y mantenibles.
+
+- **Prefijo `x-`**: Define configuraciones modulares reutilizables
+- **Ignorados por Compose**: Solo sirven para organización y reutilización
+- **Combinables con anchors**: Máxima flexibilidad de configuración
+
+---
+
+### Ventajas de Extensions
+
+- **Modularidad**: Separa configuraciones complejas en bloques reutilizables
+- **Mantenibilidad**: Cambios centralizados en un solo lugar
+- **Legibilidad**: Archivos Compose más limpios y organizados
+- **Experimentación**: Soporte para features no oficiales
+
+---
+
+<div class="container-column">
+<div class="small">
+
+```yaml
+x-base: &base
+  image: app-base
+  container_name: base-1
+  ports:
+    - "3000:5000"
+  environment:
+    - PORT=5000
+    - LOG_LEVEL=debug
+
+services:
+  base-1:
+    <<: *base
+  base-2:
+    <<: *base
+    container_name: base-2
+    ports:
+      - "4000:5000"
+
+  base-3:
+    <<: *base
+    container_name: base-3
+    ports:
+      - "5000:5000"
+
+  base-4:
+    <<: *base
+    container_name: base-4
+    ports:
+      - "6000:5000"
+    environment:
+      LOG_LEVEL: info
+
+networks:
+  default:
+    driver: bridge
+    name: app-base
+```
+
+</div>
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 02-compose/ejemplos/2.extension/docker-compose.yaml up -d
+  ```
+
+- Verificación
+
+  ```bash
+  docker compose -f 02-compose/ejemplos/2.extension/docker-compose.yaml ps -a
+  ```
+
+  ```bash
+  CONTAINER ID   IMAGE      COMMAND                  CREATED         STATUS                   PORTS                                                   NAMES
+  69fc8a8e740f   app-base   "docker-entrypoint.s…"   6 seconds ago   Up 6 seconds (healthy)   3000/tcp, 0.0.0.0:4000->5000/tcp, [::]:4000->5000/tcp   base-2
+  4c45af3a3ce2   app-base   "docker-entrypoint.s…"   6 seconds ago   Up 6 seconds (healthy)   3000/tcp, 0.0.0.0:3000->5000/tcp, [::]:3000->5000/tcp   base-1
+  ec7edaa58407   app-base   "docker-entrypoint.s…"   6 seconds ago   Up 6 seconds (healthy)   3000/tcp, 0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   base-3
+  54024a094099   app-base   "docker-entrypoint.s…"   6 seconds ago   Up 6 seconds (healthy)   3000/tcp, 0.0.0.0:6000->5000/tcp, [::]:6000->5000/tcp   base-4
+  ```
+
+- Limpiar
+
+  ```bash
+  docker compose -f 02-compose/ejemplos/2.extension/docker-compose.yaml down
   ```
 
 </div>
@@ -350,7 +446,7 @@ services:
 - Resultado
 
   ```
-  docker compose -f 02-compose/ejemplos/2.healthcheck/docker-compose.yaml ps -a
+  docker compose -f 02-compose/ejemplos/3.healthcheck/docker-compose.yaml ps -a
   NAME                      IMAGE         COMMAND                  SERVICE                   CREATED          STATUS                      PORTS
   base-conditional          app-base      "docker-entrypoint.s…"   base-conditional          40 seconds ago   Up 18 seconds (healthy)     3000/tcp
   base-health               app-base      "docker-entrypoint.s…"   base-health               40 seconds ago   Exited (1) 39 seconds ago
@@ -372,20 +468,173 @@ services:
 
 ---
 
-## Gestión de entornos
-
-En el desarrollo de aplicaciones, un entorno define el contexto en el que se ejecuta la aplicación: desarrollo, pruebas, integración o producción. Cada entorno puede requerir configuraciones, variables y servicios diferentes.
+# Gestión entornos
 
 ---
 
-Docker y Docker Compose permiten gestionar estos entornos de varias formas:
+## Multiple Ficheros Compose
 
-- **Variables de entorno:** Permiten parametrizar el comportamiento de los servicios según el entorno. Se pueden definir directamente en el archivo Compose, en archivos .env o pasarlas desde el sistema.
-
-- **Archivos Compose específicos:** Puedes crear archivos docker-compose adicionales (por ejemplo, docker-compose.dev.yaml, docker-compose.prod.yaml) para sobreescribir o extender la configuración base según el entorno.
+Docker Compose permite trabajar con múltiples archivos para personalizar aplicaciones según diferentes entornos o flujos de trabajo. Esto es especialmente útil para aplicaciones grandes con múltiples equipos y configuraciones complejas.
 
 ---
 
-- **Múltiples Dockerfile:** Es posible mantener diferentes Dockerfile (por ejemplo, Dockerfile.dev, Dockerfile.prod) adaptados a las necesidades de cada entorno, seleccionando el adecuado en la sección build del Compose.
+### Ventajas de múltiples archivos:
 
-Estas estrategias permiten adaptar fácilmente la infraestructura y el despliegue de la aplicación a cada fase del ciclo de vida.
+- **Modularidad**: Separación por equipos o funcionalidades
+- **Entornos**: Configuraciones específicas (dev, test, prod)
+- **Reutilización**: Composición flexible de servicios
+- **Mantenibilidad**: Gestión distribuida de configuraciones
+
+---
+
+## Estrategias con múltiples archivos
+
+---
+
+### Merge - Fusión de archivos
+
+Docker Compose puede combinar múltiples archivos usando el flag `-f` o la variable de entorno `COMPOSE_FILE`. Los archivos se fusionan en el orden especificado, donde los archivos posteriores pueden sobrescribir, fusionar o añadir configuraciones a los anteriores.
+
+```bash
+docker compose -f compose.yaml -f compose.admin.yaml run backup_db
+```
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `docker-compose.yaml`
+
+```yaml
+services:
+  app-base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+    image: app-base
+    container_name: app-base
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+
+networks:
+  default:
+    driver: bridge
+    name: app-base
+```
+
+- `docker-compose.dev.yaml`
+
+```yaml
+services:
+  app-base:
+    environment:
+      SECRET: development-secret
+      DEBUG_LEVEL: debug
+      USE_DB: false
+```
+
+</div>
+
+<div class="small">
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.dev.yaml up --build
+```
+
+- Verificación
+
+```bash
+docker exec app-base env
+```
+
+```bash
+curl http://localhost:3000/secret
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.dev.yaml rm
+```
+
+</div>
+</div>
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `docker-compose.prod.yaml`
+
+```yaml
+services:
+  app-base:
+    volumes:
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+    environment:
+      SECRET: production-secret
+      DEBUG_LEVEL: warn
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment: &db-env
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+volumes:
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+```
+
+</div>
+
+<div class="small">
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.prod.yaml up --build
+```
+
+- Verificación
+
+```bash
+docker exec app-base env
+```
+
+```bash
+curl http://localhost:3000/secret
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/5.merge/docker-compose.yaml -f 02-compose/ejemplos/5.merge/docker-compose.prod.yaml rm
+```
+
+</div>
+</div>
+
+---

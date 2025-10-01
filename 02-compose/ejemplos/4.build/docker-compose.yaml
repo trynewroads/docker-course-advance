@@ -1,0 +1,12 @@
+services:
+  base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+
+networks:
+  default:
+    driver: bridge
+    name: app-base
