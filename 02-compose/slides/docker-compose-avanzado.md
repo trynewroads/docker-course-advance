@@ -790,3 +790,158 @@ docker compose -f 02-compose/ejemplos/6.extends/docker-compose.dev.yaml down
 </div>
 
 ---
+
+### Include
+
+Include permite incorporar archivos Compose separados directamente en tu archivo principal. Esto facilita la modularización de aplicaciones complejas en sub-archivos Compose, haciendo las configuraciones más simples y explícitas.
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- `app-base.yaml`
+
+```yaml
+services:
+  app-base:
+    image: app-base
+    container_name: app-base
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+```
+
+- `postgres.yaml`
+
+```yaml
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment: &db-env
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+```
+
+</div>
+
+<div class="small">
+
+- `docker-compose.override.dev.yaml`
+
+```yaml
+services:
+  app-base:
+    environment:
+      SECRET: development-secret
+      DEBUG_LEVEL: debug
+      USE_DB: false
+```
+
+- `docker-compose.dev.yaml`
+
+```yaml
+include:
+  - path:
+      - app-base.yaml
+      - docker-compose.override.dev.yaml
+```
+
+- `docker-compose.prod.yaml`
+
+```yaml
+include:
+  - path:
+      - app-base.yaml
+      - postgres.yaml
+      - docker-compose.override.prod.yaml
+
+volumes:
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local
+```
+
+</div>
+</div>
+
+---
+
+<div class="container-column">
+
+<div class="small">
+
+- `docker-compose.override.prod.yaml`
+
+```yaml
+services:
+  app-base:
+    volumes:
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+    environment:
+      SECRET: production-secret
+      DEBUG_LEVEL: warn
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+```
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/7.include/docker-compose.dev.yaml up -d --build
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/7.include/docker-compose.dev.yaml down
+```
+
+</div>
+
+<div class="small">
+
+- Verificación
+
+```bash
+docker exec app-base env
+```
+
+```bash
+curl http://localhost:3000/secret
+```
+
+- Ejecución
+
+```bash
+docker compose -f 02-compose/ejemplos/7.include/docker-compose.prod.yaml up -d --build
+```
+
+- Limpiar
+
+```bash
+docker compose -f 02-compose/ejemplos/7.include/docker-compose.dev.yaml down
+```
+
+</div>
+</div>

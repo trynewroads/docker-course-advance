@@ -1,0 +1,11 @@
+include:
+  - path:
+      - app-base.yaml
+      - postgres.yaml
+      - docker-compose.override.prod.yaml
+
+volumes:
+  app-logs:
+    driver: local
+  app-uploads:
+    driver: local

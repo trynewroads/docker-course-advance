@@ -1,0 +1,6 @@
+services:
+  app-base:
+    environment:
+      SECRET: development-secret
+      DEBUG_LEVEL: debug
+      USE_DB: false
