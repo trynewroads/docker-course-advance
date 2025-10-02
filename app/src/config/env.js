@@ -1,11 +1,10 @@
 const { z } = require('zod');
-const logger = require('./logger');
 
 if (process.env.NODE_ENV !== 'production') {
   try {
     require('dotenv').config();
   } catch (error) {
-    logger.warn('No se pudo cargar .env:', error.message);
+    console.warn('No se pudo cargar .env:', error.message);
   }
 }
 
@@ -17,7 +16,7 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().min(1).max(65535).default(3000),
   DEBUG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'verbose', 'debug', 'silly']).default('info'),
-  USE_DB: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()).default(false),
+  USE_DB: z.string().toLowerCase().transform((x) => x === 'true').pipe(z.boolean()).default('false'),
   DB_HOST: z.string().default('localhost'),
   DB_PORT: z.coerce.number().default(5432),
   DB_NAME: z.string().optional(),
@@ -41,7 +40,7 @@ try {
   
   module.exports = env;
 } catch (error) {
-  logger.error('Error en configuración de entorno:', error);
+  console.error('Error en configuración de entorno:', error);
   // eslint-disable-next-line no-process-exit
   process.exit(1);
 }
