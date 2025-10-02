@@ -466,6 +466,109 @@ docker volume rm app-uploads-volume app-uploads-mount
 
 ---
 
+<div class=container-column>
+<div class=small>
+
+- compose.yaml
+
+```yaml
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+  depends_on:
+    - init-logs
+x-alpine: &alpine
+  image: alpine
+  volumes:
+    - app-logs:/logs
+  command: |
+    sh -c "
+      if [ ! -d '/logs/app1' ]; then
+        mkdir -p /logs/app1 /logs/app2
+        echo 'Directorios creados'
+      else
+        echo 'Directorios ya existen'
+      fi
+    "
+  restart: "no"
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - type: volume
+        source: app-logs
+        target: /app/logs
+        volume:
+          subpath: app1
+  app-base-2:
+    <<: *app-base
+    container_name: app-base-2
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: volume
+        source: app-logs
+        target: /app/logs
+        volume:
+          subpath: app2
+  init-logs:
+    <<: *alpine
+  test:
+    <<: *alpine
+    command: |
+      sh -c "
+        ls -l /logs/app1
+        cat /logs/app1/app.log
+        ls -l /logs/app2
+        cat /logs/app2/app.log
+      "
+    depends_on:
+      - app-base-1
+      - app-base-2
+volumes:
+  app-logs:
+    driver: local
+    name: app-logs
+```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+```bash
+docker compose -f 03-volumes/ejemplos/3.mount/compose.yml up -d --build
+```
+
+- Validación
+
+```bash
+docker compose -f 03-volumes/ejemplos/3.mount/compose.yml logs test
+```
+
+- Limpiar
+
+```bash
+docker compose -f 03-volumes/ejemplos/3.mount/compose.yml down -v
+docker volume rm app-logs
+```
+
+</div>
+</div>
+
+---
+
 ## Compartir datos entre máquinas
 
 Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múltiples réplicas del mismo servicio para que tengan acceso a los mismos archivos.
@@ -473,9 +576,5 @@ Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múlt
 - Añadir lógica a tu aplicación para almacenar archivos en un sistema de almacenamiento de objetos en la nube como **Amazon S3**.
 
 - Crear volúmenes con un **driver** que soporte escribir archivos a un sistema de almacenamiento externo como **NFS** o **Amazon S3**.
-
----
-
----
 
 ---
