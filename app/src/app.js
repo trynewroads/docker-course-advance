@@ -1,10 +1,10 @@
 const express = require('express');
-const env = require('./config/env'); // ✅ Mover arriba para usar antes
+const env = require('./config/env'); 
 const ensureDirs = require('./utils/ensureDirs');
 const logger = require('./config/logger');
 const uploadRoutes = require('./routes/uploads');
 const usersRouter = require('./routes/users').router;
-const userService = require('./services/users'); // ✅ Agregar servicio de usuarios
+const userService = require('./services/users'); 
 const miscRoutes = require('./routes/misc');
 
 const app = express();
@@ -24,7 +24,6 @@ if (require.main === module) {
       logger.info(`Servidor Express escuchando en puerto ${env.PORT}`);
       logger.info(`Entorno: ${env.NODE_ENV}`);
       logger.info(`Base de datos: ${env.USE_DB ? 'PostgreSQL' : 'En memoria'}`);
-      logger.info(`Autenticación habilitada: ${env.ENABLE_AUTH}`);
     });
   }).catch((error) => {
     logger.error('Error inicializando base de datos:', error.message);
