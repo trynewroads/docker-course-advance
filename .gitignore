@@ -17,3 +17,7 @@ coverage/
 
 # Otros temporales
 .DS_Store
+
+# Compress files and backups
+*.tar
+backups/

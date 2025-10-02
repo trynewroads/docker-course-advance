@@ -578,3 +578,117 @@ Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múlt
 - Crear volúmenes con un **driver** que soporte escribir archivos a un sistema de almacenamiento externo como **NFS** o **Amazon S3**.
 
 ---
+
+# Backup, restauración y migración
+
+---
+
+Los volúmenes son útiles para **backups**, **restauraciones** y **migraciones**. Usando el flag `--volumes-from` podemos crear un nuevo contenedor que monte los volúmenes del contenedor origen.
+
+---
+
+## Backup
+
+<div class=container-column>
+<div class=small>
+
+- Crear un nuevo contenedor
+
+  ```bash
+  docker run -d -p3000:3000 --name app-base app-base
+  ```
+
+- Subir contenido
+
+  ```bash
+  curl -X POST http://localhost:3000/upload   -F "file=@<file-path>"   -H "Content-Type: multipart/form-data"
+  ```
+
+- Verificación
+
+  ```bash
+  docker exec app-base ls /app/uploads
+  lenna_1759404432021.png
+  lenna_1759404434278.png
+  lenna_1759404435833.png
+  ```
+
+  </div>
+
+<div class=small>
+
+- Verificación
+
+  ```bash
+  curl -s http://localhost:3001/upload | jq '.[].filename'
+  "lenna_1759404432021.png"
+  "lenna_1759404434278.png"
+  "lenna_1759404435833.png"
+  ```
+
+- Montamos los volumes de `app-base` en el contenedor y generamos un `.tar`
+
+  ```bash
+  docker run --rm --volumes-from app-base -v $(pwd):/backup alpine tar cvf /backup/uploads.tar /app/uploads
+  ```
+
+</div>
+
+</div>
+
+---
+
+## Restaurar
+
+<div class=container-column>
+<div class=small>
+
+- Crear un nuevo contenedor
+
+  ```bash
+  docker run -d -p3001:3000 --name app-base-restore app-base
+  ```
+
+- Verificación
+
+  ```bash
+  docker exec app-base-restore ls /app/uploads
+  ```
+
+- Restaurar
+
+  ```bash
+  docker run --rm --volumes-from app-base-restore -v $(pwd):/backup alpine tar xvf /backup/uploads.tar -C /app/uploads --strip 2
+  ```
+
+  </div>
+
+<div class=small>
+
+- Verificación
+
+  ```bash
+  docker exec app-base-restore ls /app/uploads
+  lenna_1759404432021.png
+  lenna_1759404434278.png
+  lenna_1759404435833.png
+
+  ```
+
+  ```bash
+  curl -s http://localhost:3001/upload | jq '.[].filename'
+  "lenna_1759404432021.png"
+  "lenna_1759404434278.png"
+  "lenna_1759404435833.png"
+  ```
+
+- Limpiar
+
+  ```bash
+  docker rm -f app-base app-base-restore --volumes
+  docker volume prune
+  ```
+
+</div>
+
+</div>
