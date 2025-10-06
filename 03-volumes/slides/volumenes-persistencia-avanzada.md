@@ -881,3 +881,21 @@ docker compose
 ```
 
 </div>
+
+---
+
+## tmpfs
+
+---
+
+### tmpfs mounts
+
+Un **tmpfs mount es temporal**, y solo se persiste en la memoria del host. Cuando el contenedor se detiene, el tmpfs mount se elimina, y los archivos escritos allí no se persisten.
+
+---
+
+### Limitaciones
+
+- **No puedes compartir tmpfs mounts entre contenedores**
+- Esta funcionalidad **solo está disponible** en **Linux**
+- Establecer permisos reseteen después del reinicio del contenedor
