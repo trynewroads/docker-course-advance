@@ -608,7 +608,73 @@ Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múlt
 
 ---
 
-NFS, AWS, AZURE
+<div class=container-column>
+<div class=small>
+
+- compose.yaml
+
+```yml
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - app-uploads:/app/uploads
+
+  app-base:
+    <<: *app-base
+    container_name: app-base-2
+    volumes:
+      - app-uploads:/app/uploads
+    ports:
+      - "3001:3000"
+
+volumes:
+  app-uploads:
+    driver: local
+    name: app-uploads
+```
+
+</div>
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 03-volumes/ejemplos/6.shared/compose.yml  up -d
+  ```
+
+- Verificación
+
+  ```bash
+  curl -s http://localhost:3001/upload | jq '.[].filename'
+  ```
+
+  ```bash
+  curl -X POST http://localhost:3000/upload   -F "file=@<file-path>"   -H "Content-Type: multipart/form-data"
+  ```
+
+  ```bash
+  $curl -s http://localhost:3000/upload | jq '.[].filename'
+  "lenna_1759750232355.png"
+  $curl -s http://localhost:3001/upload | jq '.[].filename'
+  "lenna_1759750232355.png"
+  ```
+
+</div>
+</div>
 
 ---
 
@@ -876,8 +942,8 @@ services:
 
 - Ejecución
 
-```
-docker compose
+```bash
+docker compose -f 03-volumes/ejemplos/4.bind/compose.yml up -d
 ```
 
 </div>
@@ -931,41 +997,53 @@ Un **tmpfs mount es temporal**, y solo se persiste en la memoria del host. Cuand
 
 ---
 
+<div class=container-column>
 <div class=small>
 
 - compose.yaml
 
-```yaml
-x-app-base: &app-base
-  build:
-    context: ./../../../app
-    dockerfile: ../03-volumes/ejemplos/Dockerfile
-  ports:
-    - "3000:3000"
-  image: app-base
-  container_name: app-base
-  environment:
-    NODE_ENV: development
-    PORT: 3000
-
-services:
-  app-base-1:
-    <<: *app-base
-    container_name: app-base-volume
-    volumes:
-      - type: tmpfs
-        target: /app/logs
-        tmpfs:
-          size: 100m
-          mode: 0777
-
-  app-base-tmpfs:
-    <<: *app-base
-    container_name: app-base-mount
+  ```yaml
+  x-app-base: &app-base
+    build:
+      context: ./../../../app
+      dockerfile: ../03-volumes/ejemplos/Dockerfile
     ports:
-      - "3001:3000"
-    tmpfs:
-      - /app/logs:uid=1001,gid=1001,mode=0755
-```
+      - "3000:3000"
+    image: app-base
+    container_name: app-base
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+
+  services:
+    app-base-1:
+      <<: *app-base
+      container_name: app-base-volume
+      volumes:
+        - type: tmpfs
+          target: /app/logs
+          tmpfs:
+            size: 100m
+            mode: 0777
+
+    app-base-tmpfs:
+      <<: *app-base
+      container_name: app-base-mount
+      ports:
+        - "3001:3000"
+      tmpfs:
+        - /app/logs:uid=1001,gid=1001,mode=0755
+  ```
+
+</div>
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 03-volumes/ejemplos/5.tmpfs/compose.yml up -d
+  ```
+
+</div>
 
 </div>

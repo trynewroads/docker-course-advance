@@ -1,0 +1,31 @@
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - app-uploads:/app/uploads
+
+  app-base:
+    <<: *app-base
+    container_name: app-base-2
+    volumes:
+      - app-uploads:/app/uploads
+    ports:
+      - "3001:3000"
+
+volumes:
+  app-uploads:
+    driver: local
+    name: app-uploads
