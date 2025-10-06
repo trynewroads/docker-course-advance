@@ -899,3 +899,73 @@ Un **tmpfs mount es temporal**, y solo se persiste en la memoria del host. Cuand
 - **No puedes compartir tmpfs mounts entre contenedores**
 - Esta funcionalidad **solo está disponible** en **Linux**
 - Establecer permisos reseteen después del reinicio del contenedor
+
+---
+
+- Ejecución
+
+  ```bash
+  docker run -d --name app-base-mount --mount type=tmpfs,destination=/app/logs  app-base
+  ```
+
+  ```bash
+  docker run -d --mount type=tmpfs,destination=/app/logs --name app-base-volume app-base
+  ```
+
+- **Problema**: El montaje se crea con permisos de `root`
+
+  ```bash
+  $docker exec  app-base-volume  ls -ld logs
+  drwxr-xr-x    2 root     root            40 Oct  6 11:16 logs
+  ```
+
+- **Solución**: Establecer permisos o el usuario del montaje
+
+  ```bash
+  docker run -d --name app-base-mount --mount type=tmpfs,destination=/app/logs,tmpfs-mode=0777 app-base
+  ```
+
+  ```bash
+  docker run -d --name app-base-volume --tmpfs /app/logs:uid=1001,gid=1001,mode=0755 app-base
+  ```
+
+---
+
+<div class=small>
+
+- compose.yaml
+
+```yaml
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-volume
+    volumes:
+      - type: tmpfs
+        target: /app/logs
+        tmpfs:
+          size: 100m
+          mode: 0777
+
+  app-base-tmpfs:
+    <<: *app-base
+    container_name: app-base-mount
+    ports:
+      - "3001:3000"
+    tmpfs:
+      - /app/logs:uid=1001,gid=1001,mode=0755
+```
+
+</div>

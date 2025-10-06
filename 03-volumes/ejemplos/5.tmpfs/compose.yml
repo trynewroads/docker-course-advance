@@ -1,0 +1,30 @@
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-volume
+    volumes:
+      - type: tmpfs
+        target: /app/logs
+        tmpfs:
+          size: 100m
+          mode: 0777
+
+  app-base-tmpfs:
+    <<: *app-base
+    container_name: app-base-mount
+    ports:
+      - "3001:3000"
+    tmpfs:
+      - /app/logs:uid=1001,gid=1001,mode=0755
