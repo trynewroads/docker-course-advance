@@ -9,41 +9,43 @@ Empresa: Try New Roads
 
 ## Índice del curso
 
-1. Dockerfile avanzado y optimización de imágenes
+1. Dockerfile
 
-   - Multi-stage builds: Crear imágenes ligeras con etapas separadas.
-   - Optimización de capas: Minimizar capas y aprovechar cache.
-   - ARG y ENV: Uso de variables para configuración.
-   - Gestión de secretos: Evitar exponer datos sensibles.
+   - ¿Que és?
+   - Optimización
+   - Capas
+   - Args y Env
+   - Secretos
+   - Seguridad
 
-2. Docker Compose avanzado
+2. Docker Compose
 
-   - Anchors y extends: Reutilizar configuraciones YAML comunes.
-   - Healthcheck: Comprobación y dependencias de servicios.
-   - Entornos: Gestión de variables de entorno y configuraciones para múltiples entornos.
+   - ¿Que és?
+   - Fragmentos
+   - Extensiones
+   - Health Check
+   - Gestión Entornos
+     - Múltiple ENV
+     - Múltiple Compose
+   - Compose Specifications
 
-3. Volúmenes y persistencia avanzada
+3. Almacenamiento
 
-   - Backup con contenedores: Crear y restaurar backups con tar.
-   - Backups consistentes: Estrategias para bases de datos.
+   - Tipos
+   - Volume
+     - Gestión
+     - Named & Anonymous
+     - mount vs volume
+     - Subdirectorios
+     - Compartición entre contenedores
+     - Backup, Restauración y migración
+   - Bind
+     - mount vs volume
+   - tmpfs
 
-4. Docker Registry privado
+4. Swarm
 
-   - Desplegar registry privado: Montaje y configuración básica.
-   - Gestionar imágenes: Subir, eliminar y mantener el registry.
-
-5. Orquestación con Docker Swarm
-
-   - Clúster local: Crear entorno de pruebas.
-   - Despliegue: Gestionar stacks y rollback.
-   - Escalado: Ajustar réplicas.
-   - Red overlay: Comunicación entre nodos.
-   - Secrets: Gestionar datos sensibles.
-
-6. Monitorización y debugging (opcional)
-   - Drivers logging: Centralizar logs con distintos drivers.
-   - Herramientas monitorización: Uso de `docker stats`, Prometheus.
-   - Debugging contenedores: Técnicas para análisis en tiempo real.
+5. Gestión
 
 ---
 
