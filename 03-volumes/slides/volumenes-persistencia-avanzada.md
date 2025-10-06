@@ -1,12 +1,12 @@
 ---
 marp: true
 theme: default
-title: Volumenes y persistencia
+title: Almacenamiento
 paginate: true
 size: 16:9
 backgroundColor: #2E2052;
 color: #ffffff;
-footer: Volumenes y persistencia
+footer: Almacenamiento
 header: |
   <div class="logo-start">
     <img src="../../img/docker-logo-white.png" alt="Logo Docker"  class="logo"/>
@@ -158,13 +158,29 @@ style: |
 
 ---
 
-## Volumes
+# Almacenamiento
+
+---
+
+Docker soporta los siguientes tipos de montajes de almacenamiento para guardar datos:
+
+- **Volume mounts**
+- **Bind mounts**
+- **tmpfs mounts**
+
+---
+
+## Volume mounts
+
+---
+
+### Volume mounts
 
 Los **volúmenes** son almacenes de datos persistentes para contenedores, creados y gestionados por Docker. Puedes crear un volumen explícitamente con el comando: `docker volume create`, o Docker puede crearlo durante la creación de un contenedor o servicio.
 
 ---
 
-## Gestión de volumes
+### Gestión
 
 Cuando se crea un **volumen** se almacena en un directorio del **host Docker**. Cuando se monta un volumen en un contenedor, ese directorio es lo que se monta dentro del contenedor.
 
@@ -262,7 +278,7 @@ docker volume rm app-uploads-compose app-uploads
 
 ---
 
-## Ciclo de vida de volumes
+### Ciclo de vida
 
 - Un volume dado puede ser montado en **múltiples contenedores simultáneamente**
 - Cuando ningún contenedor está usando un volume, el volume sigue **disponible para Docker**
@@ -270,7 +286,7 @@ docker volume rm app-uploads-compose app-uploads
 
 ---
 
-## Cuando usar volumes
+### Ventajas
 
 - Se pueden gestionar usando comandos CLI de Docker o la API
 - Funcionan tanto en contenedores Linux como Windows
@@ -281,7 +297,7 @@ docker volume rm app-uploads-compose app-uploads
 
 ---
 
-## Named y Anonymous volumes
+### Named y Anonymous volumes
 
 Un volumen puede ser **nombrado** o **anónimo**. Los volúmenes anónimos reciben un nombre aleatorio que está garantizado de ser único dentro de un host Docker dado.
 
@@ -289,7 +305,7 @@ Al igual que los volúmenes nombrados, **los volúmenes anónimos persisten** in
 
 ---
 
-## Características de Anonymous volumes
+### Características de Anonymous volumes
 
 Si creas múltiples contenedores consecutivamente que cada uno usa volúmenes anónimos, **cada contenedor crea su propio volumen**.
 
@@ -378,17 +394,30 @@ Los volúmenes anónimos **no son reutilizados o compartidos** entre contenedore
 
 ---
 
-## Montaje de volumes: --mount vs --volume
+### Montaje de volumes: --mount vs --volume
 
 Para montar un volumen con el comando `docker run`, puedes usar los flags `--mount` o `--volume`.
 
-En general, **`--mount` es preferido**. La principal diferencia es que el flag `--mount` es más explícita y soporta todas las opciones disponibles.
+La principal diferencia es que el flag `--mount` es más explícita y soporta todas las opciones disponibles.
 
 **Debes usar `--mount` si quieres:**
 
 - Especificar opciones del driver de volumen
 - Montar un subdirectorio de un volumen
 - Montar un volumen en un servicio de Swarm
+
+---
+
+### Comparativa de opciones: --mount vs --volume
+
+| Opción                       | mount | volume | Descripción                                                                      |
+| ---------------------------- | ----- | ------ | -------------------------------------------------------------------------------- |
+| **source, src**              | ✅    | ❌     | La fuente del montaje. Para volúmenes nombrados, es el nombre del volumen.       |
+| **destination, dst, target** | ✅    | ❌     | La ruta donde el archivo o directorio se monta en el contenedor.                 |
+| **volume-subpath**           | ✅    | ❌     | Una ruta a un subdirectorio dentro del volumen para montar en el contenedor.     |
+| **readonly, ro**             | ✅    | ✅     | Si está presente, hace que el volumen se monte como solo lectura.                |
+| **volume-nocopy**            | ✅    | ✅     | Si está presente, los datos en el destino no se copian al volumen si está vacío. |
+| **volume-opt**               | ✅    | ❌     | Puede especificarse más de una vez, toma un par clave-valor del nombre y valor.  |
 
 ---
 
@@ -579,6 +608,10 @@ Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múlt
 
 ---
 
+NFS, AWS, AZURE
+
+---
+
 # Backup, restauración y migración
 
 ---
@@ -690,5 +723,161 @@ Los volúmenes son útiles para **backups**, **restauraciones** y **migraciones*
   ```
 
 </div>
+
+</div>
+
+---
+
+## Bind Mounts
+
+---
+
+### Bind Mounts
+
+Cuando usas un **bind mount**, un archivo o directorio en la máquina host se monta desde el host hacia un contenedor. En contraste, cuando usas un **volume**, se crea un nuevo directorio dentro del directorio de almacenamiento de Docker en la máquina host, y Docker gestiona el contenido de ese directorio.
+
+---
+
+### Cuándo usar bind mounts
+
+- **Compartir código fuente** o artefactos de build entre un entorno de desarrollo en el host Docker y un contenedor.
+
+- Cuando quieres **crear o generar archivos** en un contenedor y persistir los archivos en el filesystem del host.
+
+- **Compartir archivos de configuración** desde la máquina host a los contenedores.
+
+---
+
+### Consideraciones y limitaciones
+
+- Los bind mounts tienen **acceso de escritura** a archivos en el host por defecto
+- Los bind mounts se crean hacia el **Docker daemon host**, no el cliente
+- Los contenedores con bind mounts están **fuertemente ligados al host**
+
+---
+
+### Montaje de volumes: --mount vs --volume
+
+Para montar un volumen con el comando `docker run`, puedes usar los flags `--mount` o `--volume`.
+
+La principal diferencia es que el flag `--mount` es más explícita y soporta todas las opciones disponibles.
+
+**Diferencias en comportamiento:**
+
+- `--volume`: **automáticamente crea el directorio** en el host.
+- `--mount` **NO crea automáticamente** un directorio.
+
+---
+
+### Comparativa de opciones: --mount vs --volume
+
+| Opción                       | --mount | --volume | Descripción                                                                                     |
+| ---------------------------- | ------- | -------- | ----------------------------------------------------------------------------------------------- |
+| **source, src**              | ✅      | ❌       | La ubicación del archivo o directorio en el host. Puede ser una ruta absoluta o relativa.       |
+| **destination, dst, target** | ✅      | ❌       | La ruta donde el archivo o directorio se monta en el contenedor. Debe ser una ruta absoluta.    |
+| **readonly, ro**             | ✅      | ✅       | Si está presente, hace que el bind mount se monte en el contenedor como solo lectura.           |
+| **bind-propagation**         | ✅      | ✅       | Si está presente, cambia la propagación del bind (shared,slave,private,rshared,rslave,rprivate) |
+
+---
+
+<div class="container-column">
+<div class="small">
+
+- Ejecución
+
+  ```bash
+  docker run -d -v ./logs_volume:/app/logs --name app-base-volume app-base-volume
+  ```
+
+- **Problema**: Se crea el directorio `bind` pero con permisos de root (cli docker)
+
+  ```bash
+  $ls -ld logs_volume/
+  drwxr-xr-x 2 root root 4096 oct  6 11:13 logs_volume/
+  ```
+
+- **Solución**: Crear el directorio previamente. Pero esto solo será válido si el usuario del contenedor y el host comparten el mismo `id`
+
+  ```bash
+  mkdir logs_volume
+  ```
+
+  ```bash
+  $docker run --rm app-base-volume id
+  uid=1001(nodeuser) gid=1001(nodejs) groups=1001(nodejs),1001(nodejs)
+  $id
+  uid=1000(silvelo) gid=1000(silvelo) groups=1000(silvelo)
+  ```
+
+- **Solución**: Cambiar permisos de la carpeta al usuario del contenedor
+
+  ```bash
+  chown 1001:1001 logs_volume
+  ```
+
+</div>
+<div class="small">
+
+- **Solución**: Establecer los permisos a `otros`
+
+  ```bash
+  chmod 777 logs_volume
+  ```
+
+- **Solución**: Usar el mismo id en ambos entorno
+
+  ```bash
+  $docker exec app-base-volume cat /etc/passwd
+  node:x:1000:1000::/home/node:/bin/sh
+  nodeuser:x:1001:1001::/home/nodeuser:/sbin/nologin
+  ```
+
+  ```
+  USER node
+  ```
+
+- Ejecución
+
+  ```bash
+  docker run -d --mount type=bind,src=./logs_volume,dst=/app/logs --name app-base-volume app-base-volume
+  ```
+
+</div>
+</div>
+
+---
+
+<div class=small>
+
+- compose.yaml
+
+```yaml
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - type: bind
+        source: ./logs_volume/
+        target: /app/logs
+```
+
+- Ejecución
+
+```
+docker compose
+```
 
 </div>
