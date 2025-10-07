@@ -613,64 +613,78 @@ Al construir aplicaciones tolerantes a fallos, puedes necesitar configurar múlt
 
 - compose.yaml
 
-```yml
-x-app-base: &app-base
-  build:
-    context: ./../../../app
-    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
-  ports:
-    - "3000:3000"
-  image: app-base
-  container_name: app-base
-  environment:
-    NODE_ENV: development
-    PORT: 3000
-
-services:
-  app-base-1:
-    <<: *app-base
-    container_name: app-base-1
-    volumes:
-      - app-uploads:/app/uploads
-
-  app-base:
-    <<: *app-base
-    container_name: app-base-2
-    volumes:
-      - app-uploads:/app/uploads
+  ```yml
+  x-app-base: &app-base
+    build:
+      context: ./../../../app
+      dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
     ports:
-      - "3001:3000"
+      - "3000:3000"
+    image: app-base
+    container_name: app-base
+    environment:
+      NODE_ENV: development
+      PORT: 3000
 
-volumes:
-  app-uploads:
-    driver: local
-    name: app-uploads
-```
+  services:
+    app-base-1:
+      <<: *app-base
+      container_name: app-base-1
+      volumes:
+        - nfs-uploads:/app/uploads
+
+    app-base-2:
+      <<: *app-base
+      container_name: app-base-2
+      ports:
+        - "3001:3000"
+      volumes:
+        - nfs-uploads:/app/uploads
+
+  volumes:
+    nfs-uploads:
+      driver: local
+      driver_opts:
+        type: nfs
+        o: addr=127.0.0.1,rw,nfsvers=4,async,nosuid
+        device: ":/"
+  ```
 
 </div>
 <div class=small>
+
+- NFS Server
+
+  ```bash
+  $docker compose -f 03-volumes/ejemplos/6.shared/compose-nfs.yml  up -d
+  $mount -vv -o vers=4,async,nosuid,rw, 127.0.0.1:/ /mnt
+  ```
 
 - Ejecución
 
   ```bash
   docker compose -f 03-volumes/ejemplos/6.shared/compose.yml  up -d
+
   ```
 
 - Verificación
-
-  ```bash
-  curl -s http://localhost:3001/upload | jq '.[].filename'
-  ```
 
   ```bash
   curl -X POST http://localhost:3000/upload   -F "file=@<file-path>"   -H "Content-Type: multipart/form-data"
   ```
 
   ```bash
-  $curl -s http://localhost:3000/upload | jq '.[].filename'
-  "lenna_1759750232355.png"
-  $curl -s http://localhost:3001/upload | jq '.[].filename'
-  "lenna_1759750232355.png"
+  $docker exec app-base-1 ls -la uploads
+  $docker exec app-base-2 ls -la uploads
+  $ls /mnt
+  ```
+
+- Limpiar
+
+  ```bash
+  $docker compose -f 03-volumes/ejemplos/7.nfs/compose.yml down
+  $docker compose -f 03-volumes/ejemplos/7.nfs/compose-nfs.yml down
+  $sudo umount /mnt
   ```
 
 </div>

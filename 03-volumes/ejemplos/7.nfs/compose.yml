@@ -9,34 +9,26 @@ x-app-base: &app-base
   environment:
     NODE_ENV: development
     PORT: 3000
-  depends_on:
-    - nfs-server
 
 services:
-  nfs-server:
-    image: itsthenetwork/nfs-server-alpine:latest
-    container_name: nfs-server
-    restart: unless-stopped
-    privileged: true
-    environment:
-      - SHARED_DIRECTORY=/data
-    volumes:
-      - nfs-data:/data
-    ports:
-      - "2049:2049"
-
   app-base-1:
     <<: *app-base
     container_name: app-base-1
     volumes:
       - nfs-uploads:/app/uploads
 
+  app-base-2:
+    <<: *app-base
+    container_name: app-base-2
+    ports:
+      - "3001:3000"
+    volumes:
+      - nfs-uploads:/app/uploads
+
 volumes:
-  nfs-data:
-    driver: local
   nfs-uploads:
     driver: local
     driver_opts:
       type: nfs
-      o: addr=192.168.1.41,rw,nfsvers=4,async
-      device: ":/data/uploads"
+      o: addr=127.0.0.1,rw,nfsvers=4,async,nosuid
+      device: ":/"
