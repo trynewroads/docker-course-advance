@@ -162,14 +162,12 @@ style: |
 
 ---
 
-Docker soporta los siguientes tipos de montajes de almacenamiento para guardar datos:
+El subsistema de red de Docker es **modular**, utilizando drivers. Existen varios drivers por defecto que proporcionan funcionalidad de red principal:
 
-- **Bridge Network**
-- **Host Network**
-- **IPvlan Network**
-- **Macvlan Network**
-- **None Network**
-- **Overlay Network**
+- **Bridge Network**: La red por defecto.
+- **Host Network**: Elimina el aislamiento.
+- **None Network**: Aislamiento total.
+- **Overlay Network**: Conectar multiple Docker daemons.
 
 ---
 
