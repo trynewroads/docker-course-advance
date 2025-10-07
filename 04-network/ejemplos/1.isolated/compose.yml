@@ -1,0 +1,28 @@
+name: p1
+
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../04-volumes/ejemplos/Dockerfile
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+  network_mode: bridge
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    hostname: app-base-1
+    links:
+      - app-base-2
+  app-base-2:
+    <<: *app-base
+    container_name: app-base-2
+    hostname: app-base-2
+    ports:
+      - "3001:3000"
