@@ -1,0 +1,37 @@
+name: swarm-cluster
+
+services:
+  manager:
+    image: docker:dind
+    container_name: manager
+    hostname: manager
+    privileged: true
+    networks:
+      - swarm-network
+    ports:
+      - "3000:3000"
+      - "2377:2377"
+      - "7946:7946"
+      - "7946:7946/udp"
+      - "4789:4789/udp"
+    command: dockerd --host=tcp://0.0.0.0:2375 --host=unix:///var/run/docker.sock
+
+  worker-1:
+    image: docker:dind
+    container_name: worker-1
+    hostname: worker-1
+    privileged: true
+    networks:
+      - swarm-network
+
+  worker-2:
+    image: docker:dind
+    container_name: worker-2
+    hostname: worker-2
+    privileged: true
+    networks:
+      - swarm-network
+
+networks:
+  swarm-network:
+    driver: bridge
