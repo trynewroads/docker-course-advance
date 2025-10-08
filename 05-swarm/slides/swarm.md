@@ -409,3 +409,11 @@ docker service rm single
 ```
 
 Esto elimina el servicio `single` y libera los recursos en todos los nodos del cluster.
+
+---
+
+### Stacks
+
+---
+
+### Secretos
