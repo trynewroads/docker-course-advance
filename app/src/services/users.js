@@ -16,7 +16,7 @@ class UserService {
     try {
       return await this.repository.createUser(name, email);
     } catch (error) {
-      logger.error('Error en servicio createUser:', error.message);
+      logger.error('Error en servicio createUser:', error);
       throw error;
     }
   }
@@ -25,7 +25,7 @@ class UserService {
     try {
       return await this.repository.getAllUsers();
     } catch (error) {
-      logger.error('Error en servicio getAllUsers:', error.message);
+      logger.error('Error en servicio getAllUsers:', error);
       throw error;
     }
   }
@@ -34,7 +34,7 @@ class UserService {
     try {
       return await this.repository.ensureTable();
     } catch (error) {
-      logger.error('Error en servicio ensureTable:', error.message);
+      logger.error('Error en servicio ensureTable:', error);
       throw error;
     }
   }

@@ -6,7 +6,7 @@ class UploadController {
       const files = UploadService.getAllFiles();
       res.json(files);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error });
     }
   }
 
@@ -15,7 +15,7 @@ class UploadController {
       const filePath = UploadService.getFileByName(req.params.filename);
       res.sendFile(filePath);
     } catch (error) {
-      res.status(404).json({ error: error.message });
+      res.status(404).json({ error: error });
     }
   }
 
@@ -24,7 +24,7 @@ class UploadController {
       const result = UploadService.saveFile(req.file);
       res.status(201).json(result);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error });
     }
   }
 }

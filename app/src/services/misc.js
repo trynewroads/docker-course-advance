@@ -71,8 +71,8 @@ class MiscService {
       };
 
     } catch (error) {
-      logger.error('Error en DB health check:', error.message);
-      throw new Error(error.message);
+      logger.error('Error en DB health check:', error);
+      throw new Error(error);
     }
   }
 }

@@ -4,7 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
   try {
     require('dotenv').config();
   } catch (error) {
-    console.warn('No se pudo cargar .env:', error.message);
+    console.warn('No se pudo cargar .env:', error);
   }
 }
 
