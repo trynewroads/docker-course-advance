@@ -612,7 +612,187 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
 
 - **update_config:** Permite definir cómo se realiza la actualización de un servicio en Swarm. 
 
+---
+
+<div class=container-column>
+<div class=small>
+
+- stack.yaml
+
+  ```yaml
+  services:
+    app-base:
+      image: ghcr.io/trynewroads/docker-course-advance:latest
+      environment:
+        USE_DB: "true"
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASS: password
+        DB_NAME: postgres
+      ports:
+        - "3005:3000"
+      deploy:
+        replicas: 2
+        resources:
+          limits:
+            cpus: '0.50'
+            memory: 512M
+          reservations:
+            cpus: '0.25'
+            memory: 256M
+        placement:
+          constraints:
+            - node.role == worker
+
+
+    postgres:
+      image: postgres:15
+      deploy:
+        placement:
+          constraints:
+            - node.role == manager
+        replicas: 1
+        resources:
+          limits:
+            cpus: '1.00'
+            memory: 1G
+          reservations:
+            cpus: '0.50'
+            memory: 512M
+      environment:
+        POSTGRES_PASSWORD: password    
+
+  networks:
+    default:
+      driver: overlay
+      name: app-base
+  ```
+
+</div>
+<div class=small>
+
+- Inciamos el stack
+
+  ```bash
+  manager:docker stack deploy -c stack.yaml  app
+  ```
+
+- Comprobamos el stack
+
+  ```bash
+  manager:docker stack services app
+  ```
+
+- Añadimos usuarios
+
+  ```bash
+  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  ```
+
+  ```bash
+  curl http://localhost:3005/users | jq '.data[] | {name, email}'
+  ```
+
+- Eliminanos el stack
+
+  ```bash
+  manager:docker stack rm app
+  ```
+
+</div>
+</div>
+
+---
+
+## Secretos
 
 ---
 
 ### Secretos
+
+En Docker Swarm, un **secreto** es un fragmento de información sensible, como una contraseña, clave privada SSH, certificado SSL u otro dato que no debe transmitirse por la red ni almacenarse sin cifrar en un Dockerfile o en el código fuente de la aplicación.
+
+Docker Swarm permite gestionar estos secretos de forma centralizada y segura, transmitiéndolos únicamente a los contenedores que los necesitan. Los secretos están cifrados tanto en tránsito como en reposo dentro del clúster Swarm.
+
+Esto garantiza que la información sensible esté protegida y solo sea accesible por los servicios autorizados durante su ejecución.
+
+---
+
+### Crear
+
+Para crear un secreto en Docker Swarm, utiliza el siguiente comando desde un nodo manager:
+
+```bash
+manager: echo 'password' > pg_password_text
+manager: docker secret create pg_password_text pg_password_text
+```
+
+```bash
+manager: echo "password" | docker secret create pg_password -
+```
+
+---
+
+### Listar
+
+Para ver todos los secretos almacenados en el clúster Swarm:
+
+```bash
+manager: docker secret ls
+ID                          NAME           DRIVER    CREATED              UPDATED
+ta8leq2w3g5spm8earmgpre8l   pg_pass_text             3 seconds ago        3 seconds ago
+srponfu13xcdghfe8c2on30t8   pg_password              About a minute ago   About a minute ago
+
+```
+---
+
+### Cómo usar secretos
+
+Para utilizar secretos en Docker Swarm, debes tener en cuenta que **los secretos no se exponen como variables de entorno**, sino como archivos de solo lectura dentro del contenedor, ubicados en `/run/secrets/<nombre_secreto>`.
+
+Por tanto, tu aplicación debe estar preparada para **leer el contenido de estos archivos de texto** para obtener, por ejemplo, contraseñas o claves privadas.
+
+---
+
+- Iniciar servcio con secret
+
+  ```bash
+  manager: echo "my_super_secret" | docker secret create super_secret -
+  ```
+
+  ```bash
+  manager: docker service create \
+    --name app-secret \
+    --publish 3006:3000 \
+    --secret source=super_secret,target=secret.txt \
+    ghcr.io/trynewroads/docker-course-advance:latest
+  ```
+
+- Verificar
+
+  ```bash
+  curl http://localhost:3006/secret
+  {
+  "secret": "my_super_secret",
+  "timestamp": "2025-10-08T22:37:09.488Z"
+  }
+  ```
+
+---
+
+
+---
+
+### Eliminar
+
+Para eliminar un secreto del swarm, este debe estar siendo utilizado por ningún servicio activo. Docker Swarm no permite borrar secretos que estén en uso. 
+
+
+```bash
+docker secret rm my_super_secreet
+```
+
+
