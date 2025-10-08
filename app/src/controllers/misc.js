@@ -4,7 +4,7 @@ const env = require('../config/env');
 class MiscController {
   static helloWorld(req, res) {
     const message = MiscService.getHelloMessage();
-    res.send(message);
+    res.json(message);
   }
 
   static healthCheck(req, res) {

@@ -1,10 +1,19 @@
 const env = require('../config/env');
 const getSecret = require('../utils/getSecret');
 const logger = require('../config/logger');
+const os = require('os');
 
 class MiscService {
-  static getHelloMessage() {
-    return '¡Hola desde Node.js en Docker!';
+  static getHelloMessage() {    
+    return {
+      node_version: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      hostname: os.hostname(),
+      timestamp: new Date().toISOString()
+    };
   }
 
   static getHealthStatus() {
