@@ -1,6 +1,4 @@
 const { z } = require('zod');
-const getDatabasePassword = require('../utils/getDatabasePassword');
-
 
 if (process.env.NODE_ENV !== 'production') {
   try {
@@ -9,8 +7,6 @@ if (process.env.NODE_ENV !== 'production') {
     console.warn('No se pudo cargar .env:', error);
   }
 }
-
-process.env.DB_PASS = getDatabasePassword() || process.env.DB_PASS;
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -33,7 +29,7 @@ const envSchema = z.object({
 try {
   const env = envSchema.parse(process.env);
   if (env.USE_DB) {
-    if (!env.DB_NAME || !env.DB_USER || !env.DB_PASS) {
+    if (!env.DB_NAME || !env.DB_USER) {
       throw new Error(
         'DB_NAME, DB_USER y DB_PASS son requeridas cuando USE_DB=true'
       );
