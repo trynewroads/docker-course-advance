@@ -7,6 +7,7 @@ const getDatabasePassword = require('../utils/getDatabasePassword');
 class PgUserRepository extends BaseUserRepository {
   constructor() {
     super();
+    logger.debug(`Inicializando PgUserRepository con host=${env.DB_HOST}, port=${env.DB_PORT}, database=${env.DB_NAME}, user=${env.DB_USER}`);
     this.pool = new Pool({
       host: env.DB_HOST,
       port: env.DB_PORT,
