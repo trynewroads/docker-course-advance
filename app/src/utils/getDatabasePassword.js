@@ -3,7 +3,7 @@ const logger = require('../config/logger');
 
 function getDatabasePassword() {
 
-  const secretFile = '/run/secrets/db_password.txt';
+  const secretFile = '/run/secrets/db_password';
   if (fs.existsSync(secretFile)) {
     try {
       return fs.readFileSync(secretFile, 'utf8').trim();

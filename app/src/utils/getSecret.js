@@ -3,7 +3,7 @@ const logger = require('../config/logger');
 
 function getSecret() {
   
-  const secretFile = '/run/secrets/secret.txt';
+  const secretFile = '/run/secrets/secret';
   if (fs.existsSync(secretFile)) {
     try {
       return fs.readFileSync(secretFile, 'utf8').trim();
