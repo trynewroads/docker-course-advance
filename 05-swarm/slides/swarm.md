@@ -684,13 +684,13 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
 - Añadimos usuarios
 
   ```bash
-  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
-  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
-  curl -X POST http://localhost:3005/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  curl -X POST http://localhost:3001/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  curl -X POST http://localhost:3001/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
+  curl -X POST http://localhost:3001/users   -H "Content-Type: application/json"   -d '{"name":"Juan Pérez","email":"juan@example.com"}'
   ```
 
   ```bash
-  curl http://localhost:3005/users | jq '.data[] | {name, email}'
+  curl http://localhost:3001/users | jq '.data[] | {name, email}'
   ```
 
 - Eliminanos el stack
@@ -723,12 +723,13 @@ Esto garantiza que la información sensible esté protegida y solo sea accesible
 Para crear un secreto en Docker Swarm, utiliza el siguiente comando desde un nodo manager:
 
 ```bash
-manager: echo 'password' > pg_password_text
-manager: docker secret create pg_password_text pg_password_text
+manager: echo 'password' > db_password_text
+manager: docker secret create db_password_text db_password_text
+manager: rm db_password_text
 ```
 
 ```bash
-manager: echo "password" | docker secret create pg_password -
+manager: echo "password" | docker secret create db_password -
 ```
 
 ---
@@ -740,8 +741,8 @@ Para ver todos los secretos almacenados en el clúster Swarm:
 ```bash
 manager: docker secret ls
 ID                          NAME           DRIVER    CREATED              UPDATED
-ta8leq2w3g5spm8earmgpre8l   pg_pass_text             3 seconds ago        3 seconds ago
-srponfu13xcdghfe8c2on30t8   pg_password              About a minute ago   About a minute ago
+ta8leq2w3g5spm8earmgpre8l   db_password_text             3 seconds ago        3 seconds ago
+srponfu13xcdghfe8c2on30t8   db_password              About a minute ago   About a minute ago
 
 ```
 
@@ -764,15 +765,15 @@ Por tanto, tu aplicación debe estar preparada para **leer el contenido de estos
   ```bash
   manager: docker service create \
     --name app-secret \
-    --publish 3006:3000 \
-    --secret source=super_secret,target=secret.txt \
+    --publish 3004:3000 \
+    --secret source=super_secret,target=secret \
     ghcr.io/trynewroads/docker-course-advance:latest
   ```
 
 - Verificar
 
   ```bash
-  curl http://localhost:3006/secret
+  curl http://localhost:3004/secret
   {
   "secret": "my_super_secret",
   "timestamp": "2025-10-08T22:37:09.488Z"
