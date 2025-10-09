@@ -1,4 +1,6 @@
 const { z } = require('zod');
+const getDatabasePassword = require('../utils/getDatabasePassword');
+
 
 if (process.env.NODE_ENV !== 'production') {
   try {
@@ -8,7 +10,7 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-
+process.env.DB_PASS = getDatabasePassword() || process.env.DB_PASS;
 
 const envSchema = z.object({
   NODE_ENV: z
