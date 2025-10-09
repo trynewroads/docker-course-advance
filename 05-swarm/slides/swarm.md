@@ -441,6 +441,7 @@ Para desplegar una aplicación en el cluster Swarm, se utiliza el concepto de **
 ```bash
 manager: docker service create --name single ghcr.io/trynewroads/docker-course-advance:latest
 ```
+
 ---
 
 ### Listar servicios y contenedores
@@ -453,7 +454,7 @@ ID             NAME      MODE         REPLICAS   IMAGE                          
 prronr507803   single    replicated   2/2        ghcr.io/trynewroads/docker-course-advance:latest   *:3000->3000/tcp
 ```
 
-y los contenedores (tareas) que los componen. 
+y los contenedores (tareas) que los componen.
 
 ```bash
 manager: docker service ps single
@@ -495,8 +496,7 @@ Esto ajusta el servicio `single` para que tenga 5 réplicas activas distribuidas
 
 Docker Swarm gestiona automáticamente el enrutamiento y balanceo de las conexiones hacia los servicios desplegados en el clúster. Cuando un servicio está publicado en un puerto, cualquier petición enviada a ese puerto en cualquier nodo del clúster será redirigida de forma transparente a una de las réplicas disponibles del servicio.
 
-En el caso de nuestra aplicación, si accedemos [http://localhost:3000/](http://localhost:3000/), el servidor responde con un JSON que incluye la propiedad `hostname`, la cual corresponde al identificador del contenedor que ha gestionado la petición. 
-
+En el caso de nuestra aplicación, si accedemos [http://localhost:3000/](http://localhost:3000/), el servidor responde con un JSON que incluye la propiedad `hostname`, la cual corresponde al identificador del contenedor que ha gestionado la petición.
 
 ---
 
@@ -513,8 +513,7 @@ En Docker Swarm, la gestión de redes es fundamental para la comunicación y el 
   Así como Docker clásico utiliza la red bridge para conectar contenedores en un solo host, Swarm utiliza la red ingress como su análogo.
 
 - **Aislamiento de servicios:**  
-  Al igual que en Docker tradicional se pueden aislar contenedores usando diferentes redes bridge, en Swarm es posible aislar servicios utilizando distintas redes overlay. 
-
+  Al igual que en Docker tradicional se pueden aislar contenedores usando diferentes redes bridge, en Swarm es posible aislar servicios utilizando distintas redes overlay.
 
 ---
 
@@ -550,7 +549,7 @@ Los volúmenes pueden crearse antes de desplegar un servicio, o bien, si no exis
 ---
 
 - Añadir el volume
-  
+
   ```bash
   manager: docker service update --mount-add type=volume,source=app-uploads,target=/app/uploads single
   ```
@@ -595,7 +594,6 @@ Cuando despliegas un stack, Docker Swarm crea todos los servicios definidos en e
 
 #### Deploy
 
-
 El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y restricciones de despliegue avanzadas. Los elementos principales son:
 
 - **replicas:** Número de instancias (réplicas) del servicio que se desean ejecutar.
@@ -604,13 +602,13 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
 
 ---
 
-- **resources:**   Límites y reservas de recursos (CPU y memoria) para cada contenedor del servicio.
+- **resources:** Límites y reservas de recursos (CPU y memoria) para cada contenedor del servicio.
 
 - **restart_policy:** Política de reinicio automático de los contenedores en caso de fallo.
 
 - **rollback_config:** Permite definir cómo se comporta el servicio durante un rollback (reversión) tras un fallo en una actualización.
 
-- **update_config:** Permite definir cómo se realiza la actualización de un servicio en Swarm. 
+- **update_config:** Permite definir cómo se realiza la actualización de un servicio en Swarm.
 
 ---
 
@@ -636,15 +634,14 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
         replicas: 2
         resources:
           limits:
-            cpus: '0.50'
+            cpus: "0.50"
             memory: 512M
           reservations:
-            cpus: '0.25'
+            cpus: "0.25"
             memory: 256M
         placement:
           constraints:
             - node.role == worker
-
 
     postgres:
       image: postgres:15
@@ -655,13 +652,13 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
         replicas: 1
         resources:
           limits:
-            cpus: '1.00'
+            cpus: "1.00"
             memory: 1G
           reservations:
-            cpus: '0.50'
+            cpus: "0.50"
             memory: 512M
       environment:
-        POSTGRES_PASSWORD: password    
+        POSTGRES_PASSWORD: password
 
   networks:
     default:
@@ -747,6 +744,7 @@ ta8leq2w3g5spm8earmgpre8l   pg_pass_text             3 seconds ago        3 seco
 srponfu13xcdghfe8c2on30t8   pg_password              About a minute ago   About a minute ago
 
 ```
+
 ---
 
 ### Cómo usar secretos
@@ -783,16 +781,16 @@ Por tanto, tu aplicación debe estar preparada para **leer el contenido de estos
 
 ---
 
+```
+
+```
 
 ---
 
 ### Eliminar
 
-Para eliminar un secreto del swarm, este debe estar siendo utilizado por ningún servicio activo. Docker Swarm no permite borrar secretos que estén en uso. 
-
+Para eliminar un secreto del swarm, este debe estar siendo utilizado por ningún servicio activo. Docker Swarm no permite borrar secretos que estén en uso.
 
 ```bash
 docker secret rm my_super_secreet
 ```
-
-
