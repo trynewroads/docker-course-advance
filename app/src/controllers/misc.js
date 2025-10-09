@@ -25,7 +25,7 @@ class MiscController {
       res.status(500).json({
         status: 'error',
         database: env.USE_DB ? 'postgresql' : 'memory',
-        error: error.message,
+        error: error,
         timestamp: new Date().toISOString()
       });
     }

@@ -34,7 +34,7 @@ class PgUserRepository extends BaseUserRepository {
       await this.pool.query(createTableQuery);
       logger.info('Tabla users verificada/creada en PostgreSQL');
     } catch (error) {
-      logger.error('Error conectando a PostgreSQL:', error.message);
+      logger.error('Error conectando a PostgreSQL:', error);
       throw error;
     }
   }
@@ -49,7 +49,7 @@ class PgUserRepository extends BaseUserRepository {
       logger.debug(`Usuario creado en PostgreSQL: ${JSON.stringify(user)}`);
       return user;
     } catch (error) {
-      logger.error('Error creando usuario:', error.message);
+      logger.error('Error creando usuario:', error);
       
       if (error.code === '23505') {
         const duplicateError = new Error('El email ya existe');
@@ -67,7 +67,7 @@ class PgUserRepository extends BaseUserRepository {
       logger.debug(`Obteniendo ${result.rows.length} usuarios de PostgreSQL`);
       return result.rows;
     } catch (error) {
-      logger.error('Error obteniendo usuarios:', error.message);
+      logger.error('Error obteniendo usuarios:', error);
       throw error;
     }
   }

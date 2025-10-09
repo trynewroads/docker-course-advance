@@ -1,16 +1,16 @@
 const { z } = require('zod');
 const getDatabasePassword = require('../utils/getDatabasePassword');
 
+
 if (process.env.NODE_ENV !== 'production') {
   try {
     require('dotenv').config();
   } catch (error) {
-    console.warn('No se pudo cargar .env:', error.message);
+    console.warn('No se pudo cargar .env:', error);
   }
 }
 
 process.env.DB_PASS = getDatabasePassword() || process.env.DB_PASS;
-
 
 const envSchema = z.object({
   NODE_ENV: z

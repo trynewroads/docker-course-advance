@@ -12,19 +12,19 @@ class UserController {
         data: user
       });
     } catch (error) {
-      logger.error('Error creando usuario:', error.message);
+      logger.error('Error creando usuario:', error);
       
       if (error.code === 'MISSING_FIELDS') {
         return res.status(400).json({
           success: false,
-          error: error.message
+          error: error
         });
       }
       
       if (error.code === 'DUPLICATE_EMAIL') {
         return res.status(409).json({
           success: false,
-          error: error.message
+          error: error
         });
       }
       
@@ -44,7 +44,7 @@ class UserController {
         data: users
       });
     } catch (error) {
-      logger.error('Error obteniendo usuarios:', error.message);
+      logger.error('Error obteniendo usuarios:', error);
       res.status(500).json({
         success: false,
         error: 'Error interno del servidor'

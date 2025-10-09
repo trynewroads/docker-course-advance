@@ -26,7 +26,7 @@ if (require.main === module) {
       logger.info(`Base de datos: ${env.USE_DB ? 'PostgreSQL' : 'En memoria'}`);
     });
   }).catch((error) => {
-    logger.error('Error inicializando base de datos:', error.message);
+    logger.error('Error inicializando base de datos:', error);
     // eslint-disable-next-line no-process-exit
     process.exit(1);
   });
