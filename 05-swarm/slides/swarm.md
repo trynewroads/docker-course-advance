@@ -669,7 +669,7 @@ El bloque `deploy` en un servicio de Docker Swarm permite definir políticas y r
 </div>
 <div class=small>
 
-- Inciamos el stack
+- Iniciamos el stack
 
   ```bash
   manager:docker stack deploy -c stack.yaml  app

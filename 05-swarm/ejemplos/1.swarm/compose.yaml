@@ -1,13 +1,11 @@
-name: swarm-cluster
-
 services:
   manager:
     image: docker:dind
     container_name: manager
-    hostname: manager
-    privileged: true
     networks:
       - swarm-network
+    hostname: manager
+    privileged: true
     ports:
       - "3000:3000"
       - "3001:3000"
@@ -23,19 +21,19 @@ services:
 
   worker-1:
     image: docker:dind
+    networks:
+      - swarm-network
     container_name: worker-1
     hostname: worker-1
     privileged: true
-    networks:
-      - swarm-network
 
   worker-2:
     image: docker:dind
+    networks:
+      - swarm-network
     container_name: worker-2
     hostname: worker-2
     privileged: true
-    networks:
-      - swarm-network
 
 networks:
   swarm-network:
