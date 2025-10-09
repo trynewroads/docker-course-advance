@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 const BaseUserRepository = require('./base');
 const env = require('../config/env');
 const logger = require('../config/logger');
+const getDatabasePassword = require('../utils/getDatabasePassword');
 
 class PgUserRepository extends BaseUserRepository {
   constructor() {
@@ -11,7 +12,7 @@ class PgUserRepository extends BaseUserRepository {
       port: env.DB_PORT,
       database: env.DB_NAME,
       user: env.DB_USER,
-      password: env.DB_PASS,
+      password: getDatabasePassword(),
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000
