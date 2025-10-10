@@ -1061,3 +1061,99 @@ Para eliminar un secreto del swarm, este debe estar siendo utilizado por ningún
 ```bash
 docker secret rm my_super_secreet
 ```
+
+---
+
+### Dependencias
+
+En Docker Swarm, el atributo `depends_on` de Docker Compose no tiene soporte completo como en Compose tradicional: solo garantiza el orden de creación de los servicios, pero no espera a que los servicios dependientes estén saludables antes de iniciar el siguiente servicio.
+
+- La gestión de dependencias debe manejarse dentro de la propia aplicación
+- Mediante scripts de espera en el entrypoint del contenedor
+
+
+---
+
+<div class=container-column>
+
+<div class=small>
+
+```yaml
+services:
+  app-base:
+    hostname: app-base
+    image: ghcr.io/trynewroads/docker-course-advance:latest
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      'until nc -zv postgres 5432; do echo "waiting for postgres"; sleep 2; done; node /app/src/app.js'
+    environment:
+      DEBUG_LEVEL: debug    
+      USE_DB: "true"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_NAME: postgres
+    secrets:
+      - db_password
+    ports:
+      - "3005:3000"
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+
+  postgres:
+    hostname: postgres
+    image: postgres:15
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+
+secrets:
+  db_password:
+    external: true
+
+
+networks:
+  default:
+    driver: overlay
+
+```
+
+</div>
+
+
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  manager: docker stack deploy -c stack-secret.yaml d2
+  ```
+
+- Verificación
+
+  ```bash
+  manager: docker stack ls
+  docker stack ps d2
+  ID             NAME            IMAGE                                              NODE       DESIRED STATE   CURRENT STATE                ERROR     PORTS
+  w8ldkzybjatu   d2_app-base.1   ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Running         Running about a minute ago             
+  m8x6zbjz3xfz   d2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Running         Running about a minute ago             
+  sqcfcatw54hg   d2_postgres.1   postgres:15                                        manager    Running         Running 2 minutes ago      
+
+- Comprobación secreto
+
+  ```bash
+  manager: docker service ls
+  manager: docker service logs d2_app-base
+  ```
+
+</div>
+</div>
