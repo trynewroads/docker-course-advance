@@ -782,9 +782,275 @@ Por tanto, tu aplicación debe estar preparada para **leer el contenido de estos
 
 ---
 
-```
 
-```
+<div class=container-column>
+
+<div class=small>
+
+- compose.yaml: Secret externo creado por cli
+
+  ```yaml
+  services:
+    app-base:
+      hostname: app-base
+      image: ghcr.io/trynewroads/docker-course-advance:latest
+      environment:
+        DEBUG_LEVEL: debug    
+        USE_DB: "true"
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_NAME: postgres
+      secrets:
+        - db_password
+      ports:
+        - "3005:3000"
+      deploy:
+        replicas: 2
+        placement:
+          constraints:
+            - node.role == worker
+
+    postgres:
+      hostname: postgres
+      image: postgres:15
+      deploy:
+        placement:
+          constraints:
+            - node.role == manager
+        replicas: 1
+      environment:
+        POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      secrets:
+        - db_password
+
+  secrets:
+    db_password:
+      external: true
+
+
+  networks:
+    default:
+      driver: overlay
+  ```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  manager: docker stack deploy -c stack-secret.yaml m2
+  ```
+
+- Verificación
+
+  ```bash
+  manager: docker stack ls
+  manager: docker stack ps m2
+  ID             NAME                IMAGE                                              NODE       DESIRED STATE   CURRENT STATE           ERROR                       PORTS
+  xgk2g1m21v1m   m2_app-base.1       ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Running         Running 3 minutes ago                               
+  rre6mlu8letk    \_ m2_app-base.1   ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  nlpiy9kuaiis   m2_app-base.2       ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Running         Running 3 minutes ago                               
+  va3pm9s75rjq    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  zq6paqrsna8r    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  4yqn7x9az54k   m2_postgres.1       postgres:15                                        manager    Running         Running 3 minutes ago                              
+  ```
+
+- Comprobación secreto
+
+  ```bash
+  manager: docker service ls
+  manager: docker service logs m2_app-base
+  ```
+
+  Como los servicios se ejecutan en paralelo podemos encontrar problemas de que `postgres` no esta inicializado y el `backend` si, y este no pueda comnuicarse con él, que es lo que se observa `docker stack ps m2`, que algunos contenedores han finalizado por problemas de conexión.
+
+</div>
+</div>
+
+
+---
+
+
+<div class=container-column>
+
+<div class=small>
+
+- - compose.yaml: Secret externo creado por fichero
+
+  ```yaml
+  services:
+    app-base:
+      hostname: app-base
+      image: ghcr.io/trynewroads/docker-course-advance:latest
+      environment:
+        DEBUG_LEVEL: debug
+        USE_DB: "true"
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_NAME: postgres
+      ports:
+        - "3005:3000"
+      secrets:
+        - source: db_password_text
+          target: db_password
+      deploy:
+        replicas: 2
+        placement:
+          constraints:
+            - node.role == worker
+
+    postgres:
+      hostname: postgres
+      image: postgres:15
+      deploy:
+        replicas: 1
+        placement:
+          constraints:
+            - node.role == manager
+      environment:
+        POSTGRES_PASSWORD_FILE: /run/secrets/db_password_text
+      secrets:
+        - db_password_text
+          
+
+  secrets:
+    db_password_text:
+      external: true
+
+  networks:
+    default:
+      driver: overlay
+      name: app-base
+  ```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  manager: docker stack deploy -c stack-secret.yaml m2
+  ```
+
+- Verificación
+
+  ```bash
+  manager: docker stack ls
+  manager: docker stack ps m2
+  ID             NAME                IMAGE                                              NODE       DESIRED STATE   CURRENT STATE           ERROR                       PORTS
+  xgk2g1m21v1m   m2_app-base.1       ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Running         Running 3 minutes ago                               
+  rre6mlu8letk    \_ m2_app-base.1   ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  nlpiy9kuaiis   m2_app-base.2       ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Running         Running 3 minutes ago                               
+  va3pm9s75rjq    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  zq6paqrsna8r    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  4yqn7x9az54k   m2_postgres.1       postgres:15                                        manager    Running         Running 3 minutes ago                              
+  ```
+
+- Comprobación secreto
+
+  ```bash
+  manager: docker service ls
+  manager: docker service logs m2_app-base
+  ```
+</div>
+</div>
+
+
+
+---
+
+
+<div class=container-column>
+
+<div class=small>
+
+- compose.yaml: Secret propio del fichero
+
+  ```yaml
+  services:
+    app-base:
+      hostname: app-base
+      image: ghcr.io/trynewroads/docker-course-advance:latest
+      environment:
+        DEBUG_LEVEL: debug
+        USE_DB: "true"
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_NAME: postgres
+      secrets:
+        - db_password
+      ports:
+        - "3005:3000"
+      deploy:
+        replicas: 2
+        placement:
+          constraints:
+            - node.role == worker
+
+    postgres:
+      hostname: postgres
+      image: postgres:15
+      deploy:
+        placement:
+          constraints:
+            - node.role == manager
+        replicas: 1
+      environment:
+        POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      secrets:
+        - db_password
+
+  secrets:
+    db_password:
+      file: ./db_password.txt
+
+
+  networks:
+    default:
+      driver: overlay
+
+  ```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  manager: docker stack deploy -c stack-secret.yaml m2
+  ```
+
+- Verificación
+
+  ```bash
+  manager: docker stack ls
+  manager: docker stack ps m2
+  ID             NAME                IMAGE                                              NODE       DESIRED STATE   CURRENT STATE           ERROR                       PORTS
+  xgk2g1m21v1m   m2_app-base.1       ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Running         Running 3 minutes ago                               
+  rre6mlu8letk    \_ m2_app-base.1   ghcr.io/trynewroads/docker-course-advance:latest   worker-2   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  nlpiy9kuaiis   m2_app-base.2       ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Running         Running 3 minutes ago                               
+  va3pm9s75rjq    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  zq6paqrsna8r    \_ m2_app-base.2   ghcr.io/trynewroads/docker-course-advance:latest   worker-1   Shutdown        Failed 3 minutes ago    "task: non-zero exit (1)"   
+  4yqn7x9az54k   m2_postgres.1       postgres:15                                        manager    Running         Running 3 minutes ago                              
+  ```
+
+- Comprobación secreto
+
+  ```bash
+  manager: docker service ls
+  manager: docker service logs m2_app-base
+  ```
+
+</div>
+</div>
+
 
 ---
 
