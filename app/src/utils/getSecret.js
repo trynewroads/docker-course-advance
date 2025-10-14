@@ -21,4 +21,5 @@ function getSecret() {
   return secret;
 }
 
+
 module.exports = getSecret;
