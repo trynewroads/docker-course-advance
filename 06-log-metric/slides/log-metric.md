@@ -492,3 +492,80 @@ volumes:
 ---
 
 ## Metrics
+
+El comando `docker stats` permite monitorear en tiempo real el uso de recursos de los contenedores.
+
+Para un monitoreo real y centralizado de métricas en entornos productivos, es recomendable integrar soluciones especializadas como **Prometheus**, **Grafana** o herramientas de observabilidad que permitan recolectar, almacenar y visualizar métricas históricas, establecer alertas y analizar tendencias de uso de recursos en toda la infraestructura Docker.
+
+---
+
+### Prometheus
+
+Es una herramienta de monitoreo y almacenamiento de series temporales ampliamente utilizada para recolectar métricas de sistemas y aplicaciones, incluyendo contenedores Docker.
+
+- Permite recolectar métricas de uso de CPU, memoria, red, disco y más, de forma automática y continua.
+- Se integra fácilmente con Docker a través de **exporters** como [cAdvisor](https://github.com/google/cadvisor), que expone métricas de todos los contenedores en el host.
+- Las métricas recolectadas pueden visualizarse y analizarse en tiempo real usando **Grafana**.
+
+---
+
+<div class=container-column>
+<div class=small>
+- compose.yaml
+
+```yaml
+name: metric
+
+services:
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    volumes:
+      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    networks:
+      - metric
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - metric
+
+networks:
+  metric:
+    driver: "bridge"
+    name: metric-network
+```
+
+</div>
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 06-log-metric/ejemplos/4.metrics/compose.yaml up -d
+  ```
+
+- Verificación: Acceder [http://localhost:9090/targets](http://localhost:9090/targets)
+
+- Query: podremos realizar las consultas
+
+  ```
+  container_memory_usage_bytes{name=~"app-backend-1|app-postgres-1"}
+  ```
+
+    <figure>
+    <img src="./../../img/prometheus_query.png" alt="Prometheus Query">
+  <figure>
+
+</div>
+</div>
