@@ -1,0 +1,19 @@
+services:
+  app-base-compose:
+    build:
+      context: ./../../../app
+      dockerfile: ../03-volumes/ejemplos/Dockerfile
+    ports:
+      - "3001:3000"
+    image: app-base
+    container_name: app-base-compose
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+    volumes:
+      - app-uploads-compose:/app/uploads
+
+volumes:
+  app-uploads-compose:
+    driver: local
+    name: app-uploads-compose

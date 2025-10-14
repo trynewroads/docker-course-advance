@@ -1,0 +1,34 @@
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - nfs-uploads:/app/uploads
+
+  app-base-2:
+    <<: *app-base
+    container_name: app-base-2
+    ports:
+      - "3001:3000"
+    volumes:
+      - nfs-uploads:/app/uploads
+
+volumes:
+  nfs-uploads:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=127.0.0.1,rw,nfsvers=4,async,nosuid
+      device: ":/"

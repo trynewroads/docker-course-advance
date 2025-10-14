@@ -1,0 +1,75 @@
+x-app-base: &app-base
+  build:
+    context: ./../../../app
+    dockerfile: ../03-volumes/ejemplos/Dockerfile.anonymous
+  ports:
+    - "3000:3000"
+  image: app-base
+  container_name: app-base
+  environment:
+    NODE_ENV: development
+    PORT: 3000
+  depends_on:
+    - init-logs
+
+x-alpine: &alpine
+  image: alpine
+  volumes:
+    - app-logs:/logs
+  command: |
+    sh -c "
+      if [ ! -d '/logs/app1' ]; then
+        mkdir -p /logs/app1 /logs/app2
+        echo 'Directorios creados'
+      else
+        echo 'Directorios ya existen'
+      fi
+    "
+  restart: "no"
+
+services:
+  app-base-1:
+    <<: *app-base
+    container_name: app-base-1
+    volumes:
+      - type: volume
+        source: app-logs
+        target: /app/logs
+        volume:
+          subpath: app1
+  app-base-2:
+    <<: *app-base
+    container_name: app-base-2
+    ports:
+      - "3001:3000"
+    volumes:
+      - type: volume
+        source: app-logs
+        target: /app/logs
+        volume:
+          subpath: app2
+  init-logs:
+    <<: *alpine
+
+  test:
+    <<: *alpine
+    command: |
+      sh -c "
+        echo '---'
+        ls -l /logs/app1
+        echo '---'
+        cat /logs/app1/app.log
+        echo '---'
+        ls -l /logs/app2
+        echo '---'
+        cat /logs/app2/app.log
+        echo '---'
+      "
+    depends_on:
+      - app-base-1
+      - app-base-2
+
+volumes:
+  app-logs:
+    driver: local
+    name: app-logs
