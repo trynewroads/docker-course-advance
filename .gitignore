@@ -15,6 +15,7 @@ coverage/
 !9.env/**
 .env
 .env.*
+!06-log-metric/ejemplos/1.graylog/.env
 
 
 # Otros temporales
