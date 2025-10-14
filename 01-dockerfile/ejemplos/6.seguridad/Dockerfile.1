@@ -1,0 +1,21 @@
+FROM node:20-alpine
+WORKDIR /app
+
+# Crear usuario y grupo no-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+# Instalar dependencias como root
+COPY package*.json ./
+RUN npm install --only=production && \
+    npm cache clean --force
+
+# Copiar código y cambiar propiedad
+COPY src src
+RUN chown -R nodeuser:nodejs /app
+
+# Cambiar a usuario no-root
+USER nodeuser
+
+EXPOSE 3000
+CMD ["node", "src/app.js"]
