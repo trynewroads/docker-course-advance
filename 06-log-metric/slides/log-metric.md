@@ -372,11 +372,97 @@ volumes:
 
 - Generar CA
 
+    <figure>
+    <img src="./../../img/graylog_create_ca.png" alt="Create CA">
+    <figure>
+
 - Iniciar Sesión: admin/admin1234
 
-- Configurar System -> Input: GELF UDP
+</div>
+</div>
 
-- Configurar Stream
+---
+
+<div class=container-column>
+<div class=small>
+
+- Configurar System -> Input: GELF UDP: recibir y procesar logs provenientes de diferentes fuentes externas
+
+<figure>
+  <img src="./../../img/create_input.png" alt="Create Input">
+<figure>
+
+</div>
+<div class=small>
+
+- Configurar Stream: Se utiliza para clasificar, filtrar y enrutar los mensajes de log que llegan al sistema.
+
+<figure>
+  <img src="./../../img/create_stream.png" alt="Create Stream">
+<figure>
+
+</div>
+</div>
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- compose.yaml
+
+  ```yaml
+  name: app
+
+  x-gelf: &gelf
+  driver: gelf
+  options:
+    gelf-address: "udp://192.168.1.41:12201"
+
+  services:
+  backend:
+    image: ghcr.io/trynewroads/docker-course-advance:latest
+    logging:
+    <<: *gelf
+    environment:
+    USE_DB: "true"
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_USER: postgres
+    DB_PASS: password
+    DB_NAME: postgres
+    ports:
+      - "3100:3000"
+    depends_on:
+    postgres:
+      condition: service_healthy
+
+  postgres:
+    image: postgres:15
+
+    logging:
+    <<: *gelf
+    environment:
+    POSTGRES_PASSWORD: password
+    healthcheck:
+    test: ["CMD", "pg_isready", "-U", "postgres"]
+    interval: 20s
+    timeout: 10s
+    retries: 3
+
+  networks:
+  default:
+    name: app-network
+  ```
+
+</div>
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 06-log-metric/ejemplos/3.compose/compose.yaml up -d
+  ```
 
 </div>
 </div>
