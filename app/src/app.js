@@ -7,10 +7,10 @@ const usersRouter = require('./routes/users').router;
 const userService = require('./services/users'); 
 const miscRoutes = require('./routes/misc');
 const requestLogger = require('./config/request/interceptors');
+
 const app = express();
 
 ensureDirs();
-
 
 app.use(express.json());
 app.use(requestLogger);
