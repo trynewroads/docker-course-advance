@@ -540,6 +540,16 @@ services:
     networks:
       - metric
 
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3900:3000"
+    networks:
+      - metric
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
 networks:
   metric:
     driver: "bridge"
@@ -566,6 +576,79 @@ networks:
     <figure>
     <img src="./../../img/prometheus_query.png" alt="Prometheus Query">
   <figure>
+
+</div>
+</div>
+
+---
+
+<div class=small>
+
+- Configurar Prometheus en Grafana: Connections -> Add Wew connection: http://prometheus:9090
+
+- Importamos un dashboard o creamos uno nuevo: [https://grafana.com/grafana/dashboards/193-docker-monitoring/](https://grafana.com/grafana/dashboards/193-docker-monitoring/)
+
+</div>
+
+---
+
+## Administrador
+
+---
+
+## Portainer
+
+Es una herramienta de gestión visual para entornos Docker y Kubernetes. Permite administrar contenedores, imágenes, volúmenes, redes y stacks desde una interfaz web intuitiva, sin necesidad de usar la línea de comandos.
+
+- Facilita la creación, supervisión y eliminación de contenedores y servicios.
+- Permite gestionar múltiples hosts Docker desde un solo panel.
+- Ofrece control de acceso por usuarios y roles.
+- Ideal para entornos de desarrollo, pruebas y producción.
+
+---
+
+<div class=container-column>
+<div class=small>
+
+- compose.yaml
+
+  ```yaml
+  services:
+    portainer:
+      container_name: portainer
+      image: portainer/portainer-ce:lts
+      restart: always
+      networks:
+        - 1swarm_swarm-network
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - portainer_data:/data
+      ports:
+        - 9443:9443
+        - 8000:8000
+
+  volumes:
+    portainer_data:
+      name: portainer_data
+
+  networks:
+    default:
+      name: portainer_network
+    1swarm_swarm-network:
+      external: true
+  ```
+
+</div>
+
+<div class=small>
+
+- Ejecución
+
+  ```bash
+  docker compose -f 06-log-metric/ejemplos/5.portainer/compose.yaml up -d
+  ```
+
+- Acceder [https://localhost:9443](https://localhost:9443)
 
 </div>
 </div>

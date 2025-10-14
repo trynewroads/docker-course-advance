@@ -24,6 +24,16 @@ services:
     networks:
       - metric
 
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3900:3000"
+    networks:
+      - metric
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
 networks:
   metric:
     driver: "bridge"
