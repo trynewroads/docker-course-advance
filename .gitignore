@@ -13,6 +13,7 @@ coverage/
 # Entornos
 .env
 .env.*
+!06-log-metric/ejemplos/1.graylog/.env
 
 # Otros temporales
 .DS_Store
