@@ -464,6 +464,24 @@ volumes:
   docker compose -f 06-log-metric/ejemplos/3.compose/compose.yaml up -d
   ```
 
+- Verificación: En Graylog podemos ver los mensajes.
+
+- Extraer solo el mensaje:
+
+  ```
+  ^\[[^\]]+\]\[[^\]]+\]\[[^\]]+\]:\s*(.*)$
+  ```
+
+  <figure>
+    <img src="./../../img/clean_message.png" alt="Clean Message">
+  <figure>
+
+- Comprobar
+
+  ```bash
+  curl http://localhost:3000
+  ```
+
 </div>
 </div>
 
