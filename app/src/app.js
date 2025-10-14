@@ -6,11 +6,13 @@ const uploadRoutes = require('./routes/uploads');
 const usersRouter = require('./routes/users').router;
 const userService = require('./services/users'); 
 const miscRoutes = require('./routes/misc');
+const requestLogger = require('./config/request-interceptor');
 
 const app = express();
 
 ensureDirs();
 
+app.use(requestLogger);
 app.use(express.json());
 
 app.use('/users', usersRouter);
