@@ -1,0 +1,41 @@
+name: app
+
+x-gelf: &gelf
+  driver: gelf
+  options:
+    gelf-address: "udp://192.168.1.41:12201"
+
+services:
+  backend:
+    image: ghcr.io/trynewroads/docker-course-advance:latest
+    logging:
+      <<: *gelf
+    environment:
+      USE_DB: "true"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    ports:
+      - "3100:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+
+    logging:
+      <<: *gelf
+    environment:
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: app-network

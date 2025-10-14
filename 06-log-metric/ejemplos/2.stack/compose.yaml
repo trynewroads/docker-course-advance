@@ -1,0 +1,46 @@
+x-gelf: &gelf
+  driver: gelf
+  options:
+    gelf-address: "udp://192.168.1.41:12201"
+
+services:
+  app-base:
+    hostname: app-base
+    image: ghcr.io/trynewroads/docker-course-advance:latest
+    entrypoint: ["/bin/sh", "-c"]
+    logging:
+      <<: *gelf
+    command: >
+      'until nc -zv postgres 5432; do echo "waiting for postgres"; sleep 2; done; node /app/src/app.js'
+    environment:
+      DEBUG_LEVEL: debug
+      USE_DB: "true"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_NAME: postgres
+      DB_PASS: password
+    ports:
+      - "3005:3000"
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.role == worker
+
+  postgres:
+    hostname: postgres
+    image: postgres:15
+    logging:
+      <<: *gelf
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+    environment:
+      POSTGRES_PASSWORD: password
+
+networks:
+  default:
+    driver: overlay
