@@ -1,0 +1,17 @@
+services:
+  app-base:
+    volumes:
+      - app-logs:/app/logs
+      - app-uploads:/app/uploads
+    environment:
+      SECRET: production-secret
+      DEBUG_LEVEL: warn
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy

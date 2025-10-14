@@ -1,0 +1,8 @@
+services:
+  base:
+    image: app-base:${TAG}
+    container_name: app-base
+    ports:
+      - ${EXTERNAL_PORT}:${INTERNAL_PORT}
+    env_file:
+      - .env.dev

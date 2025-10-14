@@ -1,0 +1,39 @@
+services:
+  base-1:
+    image: app-base
+    container_name: base-1
+    ports:
+      - "3000:5000"
+    environment: &env
+      - PORT=5000
+      - LOG_LEVEL=debug
+
+  base-2:
+    image: app-base
+    container_name: base-2
+    ports:
+      - "4000:5000"
+    environment: *env
+
+  base-3:
+    image: app-base
+    container_name: base-3
+    ports:
+      - "5000:8000"
+    environment: &env-list
+      PORT: 8000
+      LOG_LEVEL: warn
+
+  base-4:
+    image: app-base
+    container_name: base-4
+    ports:
+      - "6000:8000"
+    environment:
+      <<: *env-list
+      LOG_LEVEL: info
+
+networks:
+  default:
+    driver: bridge
+    name: app-base

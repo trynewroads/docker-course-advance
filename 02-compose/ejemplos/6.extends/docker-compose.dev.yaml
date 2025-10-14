@@ -1,0 +1,9 @@
+services:
+  app-base:
+    extends:
+      file: common-services.yaml
+      service: common-base
+    environment:
+      SECRET: development-secret
+      DEBUG_LEVEL: debug
+      USE_DB: false

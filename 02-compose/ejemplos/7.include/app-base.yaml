@@ -1,0 +1,13 @@
+services:
+  app-base:
+    image: app-base
+    container_name: app-base
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+
+    environment:
+      NODE_ENV: development
+      PORT: 3000

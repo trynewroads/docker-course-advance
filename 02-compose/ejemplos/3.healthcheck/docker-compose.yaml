@@ -1,0 +1,58 @@
+services:
+  base-health:
+    container_name: base-health
+    image: app-base
+    environment: &env-base
+      USE_DB: true
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: password
+      DB_NAME: postgres
+    ports:
+      - "3000:3000"
+
+  base-no-health:
+    container_name: base-no-health
+    image: app-base
+    ports:
+      - "4000:3000"
+    environment:
+      <<: *env-base
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  base-health-conditional:
+    container_name: base-health-conditional
+    image: app-base
+    depends_on:
+      base-no-health:
+        condition: service_healthy
+
+  base-conditional:
+    container_name: base-conditional
+    image: app-base
+    depends_on:
+      - base-no-health
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    driver: bridge
+    name: app-base

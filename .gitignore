@@ -11,12 +11,18 @@ uploads
 coverage/
 
 # Entornos
+!9.env/
+!9.env/**
 .env
 .env.*
+
 
 # Otros temporales
 .DS_Store
 
+<<<<<<< HEAD
 # Compress files and backups
 *.tar
 backups/
+=======
+>>>>>>> 02-compose

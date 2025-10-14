@@ -1,0 +1,23 @@
+services:
+  common-base:
+    build:
+      context: ./../../../app
+      dockerfile: ../02-compose/ejemplos/Dockerfile
+    ports:
+      - "3000:3000"
+    image: app-base
+    container_name: app-base
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+
+  common-postgres:
+    container_name: postgres
+    image: postgres:15
+    environment: &db-env
+      POSTGRES_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 20s
+      timeout: 10s
+      retries: 3
