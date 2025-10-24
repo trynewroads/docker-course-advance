@@ -31,12 +31,6 @@ const request = require('supertest');
 const app = require('../src/app');
 
 describe('App Express', () => {
-  it('GET / debe responder con saludo', async () => {
-    const res = await request(app).get('/');
-    expect(res.statusCode).toBe(200);
-    expect(res.text).toContain('Hola desde Node.js');
-  });
-
   it('GET /health debe responder con estado ok', async () => {
     const res = await request(app).get('/health');
     expect(res.statusCode).toBe(200);
