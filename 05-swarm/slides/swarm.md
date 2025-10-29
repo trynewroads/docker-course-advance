@@ -464,6 +464,18 @@ prronr507803   single    replicated   1/1        ghcr.io/trynewroads/docker-cour
 
 ---
 
+### Escalar
+
+Puedes aumentar o disminuir el número de réplicas de un servicio en Swarm de forma sencilla usando el comando `docker service scale`.
+
+```bash
+docker service scale single=5
+```
+
+Esto ajusta el servicio `single` para que tenga 5 réplicas activas distribuidas entre los nodos del cluster.
+
+---
+
 ### Actualizar
 
 Puedes modificar casi cualquier aspecto de un servicio existente usando el comando `docker service update`. Al actualizar un servicio, Docker detiene sus contenedores y los reinicia con la nueva configuración.
@@ -480,15 +492,194 @@ manager: docker service update --publish-rm 3000 --constraint-rm 'node.role==wor
 
 ---
 
-### Escalar
+### Rolling update
 
-Puedes aumentar o disminuir el número de réplicas de un servicio en Swarm de forma sencilla usando el comando `docker service scale`.
+Actualización progresiva de las tareas de un servicio para minimizar downtime y permitir revertir si algo falla.
+
+- **--update-parallelism:** cuántas tareas se actualizan - simultáneamente.
+- **--update-delay:** espera entre batches.
+- **--update-monitor:** tiempo que Docker observa la tarea tras el update.
+- **--update-failure-action:** acción si falla (continue | rollback | pause).
+
+---
+
+- Creamos un servicio con múltiples réplicas:
 
 ```bash
-docker service scale single=5
+docker service create --name web \
+  --replicas 6 \
+  --publish 3000:3000 \
+  ghcr.io/trynewroads/docker-course-advance:1.5
 ```
 
-Esto ajusta el servicio `single` para que tenga 5 réplicas activas distribuidas entre los nodos del cluster.
+- Actualizamos la imagen del serivcio:
+
+```bash
+docker service update \
+  --image ghcr.io/trynewroads/docker-course-advance:1.6 \
+  --update-parallelism 2 \
+  --update-delay 10s \
+  --update-monitor 30s \
+  --update-failure-action rollback \
+  web
+```
+
+
+---
+
+### Rollback
+
+Acción de revertir una actualización de un servicio a la última especificación conocida y funcional (imagen, variables, mounts y configuración de deploy). 
+
+Cuando sudece un rollback:
+
+- Si la actualización detecta fallos durante la ventana de monitorización.
+
+  ```
+  --update-failure-action rollback 
+  ```
+
+- Ejecución manual
+
+  ```bash
+  docker service rollback
+  ```
+
+Es útil para recuperar rápidamente un estado estable cuando un rolling update introduce contenedores unhealthy o errores.
+
+---
+
+### Opciones Rollback
+
+Para controlar el ritmo de actualización de un servicio podemos modificar la configuración del servicio con:
+
+- **--rollback-parallelism N:** Cuántas tareas se revierten simultáneamente.
+- **--rollback-delay DURATION:** Espera entre batches durante el rollback.
+
+---
+
+### Comprobar Servicio
+
+Comprobar el estado, la configuración y la historia de un servicio para entender cómo se está comportando:
+
+- Toda la configuración
+
+  ```bash
+  docker service inspect --pretty web
+  ```
+
+- Estado anterior
+
+  ```bash
+  docker service inspect --format '{{json .PreviousSpec}}' web
+  ```
+
+- Estado de la última actualización
+
+  ```bash
+  docker service inspect --format '{{json .UpdateStatus}}' web
+  ```
+
+---
+
+- Comprobar la configuración del rollback
+
+  ```bash
+  docker service inspect --format '{{json .Spec.RollbackConfig}}' web
+  ```
+
+- Cambiar la configuración
+
+  ```
+  docker service update --rollback-parallelism 3 --rollback-delay 10s web
+  ```
+
+- Hacer el rollback
+
+  ```
+  docker service rollback web
+  ```
+
+---
+
+## HEALTHCHECK y --update-monitor
+
+Swarm usa los HEALTHCHECK de la imagen para decidir si una tarea nueva está healthy. 
+
+Si --update-monitor es menor que la ventana necesaria para que el HEALTHCHECK marque "unhealthy", Swarm no detectará el fallo y la actualización seguirá sin pausar ni revertir.
+
+```
+monitor >= StartPeriod + Interval * Retries
+```
+
+---
+
+
+- Rollback del servicio en caso de error.
+
+```
+docker service update \
+  --image ghcr.io/trynewroads/docker-course-advance:fail \
+  --update-parallelism 3 \
+  --update-delay 10s \
+  --update-monitor 40s \
+  --update-failure-action rollback \
+  web
+```
+
+- Inspeccionamos el servicio ( 6/6 Replicas)
+
+```
+ docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE                                           PORTS
+xa2s84kn9otz   web       replicated   6/6        ghcr.io/trynewroads/docker-course-advance:1.6 
+```
+
+---
+
+- Pausar la actualización del servicio en caso de error.
+
+```
+docker service update \
+  --image ghcr.io/trynewroads/docker-course-advance:fail \
+  --update-parallelism 3 \
+  --update-delay 10s \
+  --update-monitor 40s \
+  --update-failure-action pause \
+  web
+```
+
+- Inspeccionamos el servicio ( 3/6 Replicas)
+
+```
+docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE                                            PORTS
+xa2s84kn9otz   web       replicated   3/6        ghcr.io/trynewroads/docker-course-advance:fail
+```
+
+---
+
+- Continuar la actualización del servicio en caso de error.
+
+
+```
+docker service update \
+  --image ghcr.io/trynewroads/docker-course-advance:fail \
+  --update-parallelism 3 \
+  --update-delay 10s \
+  --update-monitor 40s \
+  --update-failure-action continue \
+  web
+```
+
+- Inspeccionamos el servicio ( 0/6 Replicas)
+
+
+```
+docker service ls
+ID             NAME      MODE         REPLICAS   IMAGE                                            PORTS
+xa2s84kn9otz   web       replicated   0/6        ghcr.io/trynewroads/docker-course-advance:fail   
+```
 
 ---
 
